@@ -112,12 +112,12 @@ button.danger{background:var(--warn);color:var(--panel);border-color:var(--warn)
       <button id="bPull" disabled class="primary wide">سحب الحركة من الساعة</button>
     </div>
     <div id="days"></div>
-    <div id="nextBox" class="confirm" hidden>
+    <div id="nextBox" class="confirm" style="display:none">
       <p>الساعة تعطي ملف واحد كل مرة. عشان ناخذ الملف اللي بعده لازم نمسح هذا من الساعة. البيانات انحفظت في هذي الصفحة على جوالك.</p>
       <div class="row">
         <button id="bNext" disabled>امسح هذا الملف وهات اللي بعده</button>
       </div>
-      <div id="nextConfirm" class="row" hidden>
+      <div id="nextConfirm" class="row" style="display:none">
         <button id="bNextYes" class="danger">أكيد، امسح</button>
         <button id="bNextNo">إلغاء</button>
       </div>
@@ -385,12 +385,12 @@ async function pull(){
     if(!p){log('الملف فاضي أو قصير');return}
     const d=new Date(p.head.ts*1000);
     log(`الملف: format ${p.head.format}، يبدأ ${d.toLocaleString('en-GB')}، ${p.mins.length} دقيقة`);
-    merge(p.mins); render(); $('nextBox').hidden=false;
+    merge(p.mins); render(); $('nextBox').style.display='grid';
   }catch(e){log('خطأ: '+e.message)}
   finally{$('bPull').disabled=!(dev&&dev.gatt.connected)}
 }
 async function eraseAndNext(){
-  $('nextConfirm').hidden=true;
+  $('nextConfirm').style.display='none';
   try{
     const req=new Uint8Array([3,0x00,0x01]); log('→F '+hex(req)+' (مسح)');
     if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req);
@@ -399,8 +399,8 @@ async function eraseAndNext(){
   }catch(e){log('خطأ: '+e.message)}
 }
 $('bPull').onclick=pull;
-$('bNext').onclick=()=>{$('nextConfirm').hidden=false};
-$('bNextNo').onclick=()=>{$('nextConfirm').hidden=true};
+$('bNext').onclick=()=>{$('nextConfirm').style.display='flex'};
+$('bNextNo').onclick=()=>{$('nextConfirm').style.display='none'};
 $('bNextYes').onclick=eraseAndNext;
 render();
 
