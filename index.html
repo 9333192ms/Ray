@@ -1,0 +1,403 @@
+<title>مختبر الراي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow column, a status strip, a grid of big readings, then actions and a raw byte log */
+:root{
+  --bg:#f3f5f4; --panel:#ffffff; --fg:#14201c; --muted:#5d6b66; --line:#d9e0dd;
+  --accent:#0f7a5c; --accent-fg:#ffffff; --warn:#b4541a; --ok:#0f7a5c; --code-bg:#e9eeec;
+  --deep:#1f4f8f; --light:#7fa8d9; --wake:#e3b25b;
+  --f-body:"IBM Plex Sans Arabic",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1513; --panel:#16201d; --fg:#e4ece9; --muted:#8fa19a; --line:#26332f;
+  --accent:#3fc79a; --accent-fg:#06120e; --warn:#f0a36a; --ok:#3fc79a; --code-bg:#0b110f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1513; --panel:#16201d; --fg:#e4ece9; --muted:#8fa19a; --line:#26332f;
+  --accent:#3fc79a; --accent-fg:#06120e; --warn:#f0a36a; --ok:#3fc79a; --code-bg:#0b110f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:grid;gap:18px}
+h1{margin:0;font-size:1.6rem;font-weight:700;text-wrap:balance}
+.sub{margin:0;color:var(--muted);font-size:.92rem}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.status.on .dot{background:var(--ok)}
+.status .txt{flex:1;min-width:0}
+.serial{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:12px 14px;cursor:pointer;min-height:48px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.read{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:2px;min-width:0}
+.read .k{font-size:.8rem;color:var(--muted)}
+.read .v{font-family:var(--f-mono);font-size:1.35rem;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.read .n{font-size:.75rem;color:var(--muted)}
+.read .n.warn{color:var(--warn);font-weight:600}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions .wide{grid-column:1/-1}
+.lab{display:grid;gap:8px;padding:14px;border:1px dashed var(--line);border-radius:12px}
+.lab h2,.log h2{margin:0;font-size:1rem}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0;font-family:var(--f-mono);font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+.log{display:grid;gap:8px}
+.log pre{margin:0;background:var(--code-bg);border-radius:10px;padding:10px 12px;font-family:var(--f-mono);font-size:.78rem;line-height:1.5;max-height:260px;overflow:auto;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-all}
+.err{padding:12px 14px;border-radius:12px;border:1px solid var(--warn);color:var(--warn);font-size:.92rem}
+@media (max-width:380px){.grid{grid-template-columns:1fr 1fr}}
+.act{display:grid;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.acthead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.acthead h2{margin:0;font-size:1.1rem}
+.day{display:grid;gap:8px;padding-block:10px;border-top:1px solid var(--line)}
+.day:first-child{border-top:0}
+.dayh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:600}
+.dayh .steps{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.bars{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:56px;direction:ltr}
+.bars i{display:block;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px;opacity:.85}
+.axis{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);direction:ltr}
+.sleep{display:grid;gap:6px}
+.sleepbar{display:flex;height:18px;border-radius:5px;overflow:hidden;direction:ltr;background:var(--code-bg)}
+.sleepbar span{display:block;height:100%}
+.s-deep{background:var(--deep)} .s-light{background:var(--light)} .s-wake{background:var(--wake)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px;vertical-align:middle}
+.legend .v{font-family:var(--f-mono);color:var(--fg)}
+.confirm{display:grid;gap:8px;font-size:.88rem;color:var(--muted)}
+.confirm p{margin:0}
+button.danger{background:var(--warn);color:var(--panel);border-color:var(--warn)}
+</style>
+
+<div class="wrap" dir="rtl">
+  <header>
+    <h1>مختبر الراي</h1>
+    <p class="sub">يكلّم ساعة Misfit Ray مباشرة بالبلوتوث، بدون تطبيق Misfit. افتحها من Bluefy في الآيفون أو Chrome في الأندرويد.</p>
+  </header>
+
+  <div id="nobt" class="err" hidden>هذا المتصفح ما يقدر يوصل للبلوتوث. افتح الصفحة من <b>Chrome في الأندرويد</b>، وتأكد إن البلوتوث شغال.</div>
+
+  <div id="status" class="status">
+    <span class="dot"></span>
+    <div class="txt"><div id="stxt">غير متصل</div><div id="serial" class="serial"></div></div>
+    <button id="bConnect" class="primary">اتصال بالساعة</button>
+  </div>
+
+  <div class="grid">
+    <div class="read"><span class="k">البطارية</span><span class="v" id="vBat">—</span><span class="n">٪</span></div>
+    <div class="read"><span class="k">النشاط اليوم</span><span class="v" id="vPts">—</span><span class="n">نقطة</span></div>
+    <div class="read"><span class="k">وقت الساعة</span><span class="v" id="vTime">—</span><span class="n" id="nTime">بتوقيتها</span></div>
+  </div>
+
+  <div class="actions">
+    <button id="bRead" disabled class="wide">قراءة كل شي</button>
+    <button id="bSync" disabled>ضبط الوقت من الجوال</button>
+    <button id="bBlink" disabled>ومّض الساعة</button>
+  </div>
+
+  <section class="act">
+    <div class="acthead">
+      <h2>الحركة والنوم</h2>
+      <span id="actInfo" class="hint">ما سحبنا شي لين الحين</span>
+    </div>
+    <div class="actions">
+      <button id="bPull" disabled class="primary wide">سحب الحركة من الساعة</button>
+    </div>
+    <div id="days"></div>
+    <div id="nextBox" class="confirm" hidden>
+      <p>الساعة تعطي ملف واحد كل مرة. عشان ناخذ الملف اللي بعده لازم نمسح هذا من الساعة. البيانات انحفظت في هذي الصفحة على جوالك.</p>
+      <div class="row">
+        <button id="bNext" disabled>امسح هذا الملف وهات اللي بعده</button>
+      </div>
+      <div id="nextConfirm" class="row" hidden>
+        <button id="bNextYes" class="danger">أكيد، امسح</button>
+        <button id="bNextNo">إلغاء</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="lab">
+    <h2>أمر يدوي</h2>
+    <div class="row">
+      <input id="hex" placeholder="مثال: 0106" autocomplete="off" spellcheck="false">
+      <button id="bSend" disabled>إرسال</button>
+    </div>
+    <p class="hint">يُكتب في خانة 3DDA0002. الردود تطلع في السجل تحت.</p>
+  </div>
+
+  <div class="log">
+    <h2>السجل</h2>
+    <pre id="log">جاهز.</pre>
+  </div>
+</div>
+
+<script>
+const SVC='3dda0001-957f-7d4a-34a6-74696673696d';
+const CTRL='3dda0002-957f-7d4a-34a6-74696673696d';
+let dev=null, ctrl=null, battChar=null, waiters=[];
+const $=id=>document.getElementById(id);
+const hex=b=>Array.from(b,x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');
+function log(s){const p=$('log');const t=new Date().toLocaleTimeString('en-GB');p.textContent=`${t}  ${s}\n`+p.textContent}
+function setConn(on,txt){$('status').classList.toggle('on',on);$('stxt').textContent=txt;
+  ['bRead','bSync','bBlink','bSend','bPull','bNext'].forEach(i=>$(i).disabled=!on);
+  $('bConnect').textContent=on?'قطع الاتصال':'اتصال بالساعة'}
+
+if(!navigator.bluetooth){$('nobt').hidden=false;$('bConnect').disabled=true}
+
+function onNotify(e){
+  const b=new Uint8Array(e.target.value.buffer);
+  log('← '+hex(b));
+  const i=waiters.findIndex(w=>b[0]===3&&b[1]===w.param);
+  if(i>=0){const w=waiters.splice(i,1)[0];clearTimeout(w.t);w.res(b)}
+}
+async function write(bytes){
+  log('→ '+hex(bytes));
+  const d=new Uint8Array(bytes);
+  if(ctrl.writeValueWithResponse) await ctrl.writeValueWithResponse(d); else await ctrl.writeValue(d);
+}
+function ask(param){
+  return new Promise(async(res,rej)=>{
+    const w={param,res,t:setTimeout(()=>{waiters=waiters.filter(x=>x!==w);rej(new Error('ما ردت الساعة'))},4000)};
+    waiters.push(w);
+    try{await write([1,param])}catch(e){clearTimeout(w.t);waiters=waiters.filter(x=>x!==w);rej(e)}
+  });
+}
+
+async function connect(){
+  try{
+    log('أدوّر على الساعة...');
+    dev=await navigator.bluetooth.requestDevice({
+      filters:[{services:[SVC]},{namePrefix:'Shine'}],
+      optionalServices:[SVC,'battery_service','device_information']});
+    log('١) اخترت: '+(dev.name||'?'));
+    dev.addEventListener('gattserverdisconnected',()=>{setConn(false,'انقطع الاتصال');log('انقطع الاتصال')});
+    const tmo=(p,s,m)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error(m)),s*1000))]);
+    log('٢) أتصل...');
+    const srv=await tmo(dev.gatt.connect(),20,'الاتصال طوّل (٢)');
+    log('٣) اتصلت، أجيب الخدمة...');
+    const s=await tmo(srv.getPrimaryService(SVC),15,'ما لقيت الخدمة (٣)');
+    log('٤) أجيب خانة الأوامر...');
+    ctrl=await tmo(s.getCharacteristic(CTRL),15,'ما لقيت الخانة (٤)');
+    log('٥) أشغّل الإشعارات...');
+    await tmo(ctrl.startNotifications(),15,'الإشعارات ما اشتغلت (٥)');
+    try{
+      fctl=await s.getCharacteristic(FCTL); fdat=await s.getCharacteristic(FDAT);
+      await fctl.startNotifications(); await fdat.startNotifications();
+      fctl.addEventListener('characteristicvaluechanged',onFileCtl);
+      fdat.addEventListener('characteristicvaluechanged',onFileData);
+      log('٦) خانات الملفات جاهزة');
+    }catch(e){log('خانات الملفات ما اشتغلت: '+e.message)}
+    ctrl.addEventListener('characteristicvaluechanged',onNotify);
+    try{const bs=await srv.getPrimaryService('battery_service');battChar=await bs.getCharacteristic('battery_level')}catch(e){battChar=null}
+    try{const di=await srv.getPrimaryService('device_information');const c=await di.getCharacteristic('serial_number_string');
+      $('serial').textContent='S/N '+new TextDecoder().decode(await c.readValue())}catch(e){}
+    setConn(true,'متصل: '+(dev.name||'Ray'));
+    log('تم الاتصال');
+    await readAll();
+  }catch(e){log('خطأ: '+e.message);setConn(false,'غير متصل')}
+}
+
+async function readBattery(){
+  if(!battChar) return;
+  const v=await battChar.readValue();$('vBat').textContent=v.getUint8(0);
+}
+async function readPoints(){
+  const b=await ask(6);
+  $('vPts').textContent=(b[3]|(b[4]<<8)|(b[5]<<16)).toLocaleString('en');
+}
+async function readTime(){
+  const b=await ask(4);const dv=new DataView(b.buffer);
+  const sec=dv.getUint32(2,true), tz=dv.getInt16(8,true);
+  const d=new Date((sec+tz*60)*1000);
+  const p=n=>String(n).padStart(2,'0');
+  $('vTime').textContent=`${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+  const drift=Math.round(sec-Date.now()/1000);
+  const n=$('nTime');
+  if(Math.abs(drift)>120){n.textContent=`${d.getUTCFullYear()}-${p(d.getUTCMonth()+1)}-${p(d.getUTCDate())} — يحتاج ضبط`;n.classList.add('warn')}
+  else{n.textContent=`مضبوط (فرق ${drift} ث)`;n.classList.remove('warn')}
+}
+async function readAll(){
+  for(const f of [readBattery,readPoints,readTime]){try{await f()}catch(e){log('خطأ: '+e.message)}}
+}
+async function syncTime(){
+  try{
+    const now=Date.now(),sec=Math.floor(now/1000),ms=now%1000,tz=-new Date().getTimezoneOffset();
+    const b=new Uint8Array(10),dv=new DataView(b.buffer);
+    b[0]=2;b[1]=4;dv.setUint32(2,sec,true);dv.setUint16(6,ms,true);dv.setInt16(8,tz,true);
+    await write([...b]);log('تم ضبط الوقت');
+    await new Promise(r=>setTimeout(r,400));await readTime();
+  }catch(e){log('خطأ: '+e.message)}
+}
+async function blink(){try{await write([2,0xF1,5])}catch(e){log('خطأ: '+e.message)}}
+async function sendHex(){
+  const s=$('hex').value.replace(/[^0-9a-fA-F]/g,'');
+  if(!s||s.length%2){log('اكتب الأمر بالهيكس، رقمين لكل بايت (مثال 0106)');return}
+  try{await write(s.match(/../g).map(x=>parseInt(x,16)))}catch(e){log('خطأ: '+e.message)}
+}
+
+/* ---------- Activity file transfer (decoded from Misfit SDK) ----------
+   request on 0003: 01 | handle u16 | offset u32 | length u32   (activity handle 0x0100)
+   0003 reply: status in byte 3 (0 = ok); 0003 packet starting 0x08 = transfer finished
+   0004 data: byte0 = seq (low 6 bits, bit7 = last), rest = payload
+   file: handle u16 | format u16 | length u32 | timestamp u32 | ms u16 | tz u16 | records... | crc32 */
+const FCTL='3dda0003-957f-7d4a-34a6-74696673696d';
+const FDAT='3dda0004-957f-7d4a-34a6-74696673696d';
+let fctl=null, fdat=null, xfer=null;
+function onFileCtl(e){
+  const b=new Uint8Array(e.target.value.buffer); log('⇐ '+hex(b));
+  if(!xfer) return;
+  if(b[0]===8){xfer.done=true;xfer.finish();return}
+  if(!xfer.gotHead){xfer.gotHead=true; if(b.length>=4&&b[3]!==0){xfer.fail(new Error('الساعة رفضت الطلب (status '+b[3]+')'))}}
+  xfer.poke();
+}
+function onFileData(e){
+  const b=new Uint8Array(e.target.value.buffer);
+  if(!xfer) return;
+  const seq=b[0]&63, want=(xfer.seq+1)&63;
+  if(seq!==want){log('تسلسل غلط: '+seq+' بدل '+want)}
+  xfer.seq=seq; xfer.parts.push(b.slice(1)); xfer.bytes+=b.length-1;
+  if(b[0]&128) xfer.last=true;
+  if(xfer.parts.length%20===0) log('… استلمت '+xfer.bytes+' بايت');
+  xfer.poke();
+}
+function getActivityFile(){
+  return new Promise(async(res,rej)=>{
+    let t=null;
+    xfer={seq:-1,parts:[],bytes:0,gotHead:false,done:false,last:false,
+      poke(){clearTimeout(t);t=setTimeout(()=>{ if(xfer.last||xfer.bytes) xfer.finish(); else xfer.fail(new Error('ما ردت الساعة على طلب الملف')) },8000)},
+      finish(){clearTimeout(t);const all=new Uint8Array(xfer.bytes);let o=0;for(const p of xfer.parts){all.set(p,o);o+=p.length}xfer=null;res(all)},
+      fail(err){clearTimeout(t);xfer=null;rej(err)}};
+    xfer.poke();
+    const req=new Uint8Array(11),dv=new DataView(req.buffer);
+    req[0]=1;dv.setUint16(1,0x0100,true);dv.setUint32(3,0,true);dv.setUint32(7,0xFFFF,true);
+    log('→F '+hex(req));
+    try{ if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req) }
+    catch(e){xfer&&xfer.fail(e)}
+  });
+}
+function parseFile(f){
+  if(f.length<20) return null;
+  const dv=new DataView(f.buffer,f.byteOffset,f.length);
+  const head={handle:dv.getUint16(0,true),format:dv.getUint16(2,true),length:dv.getUint32(4,true),ts:dv.getUint32(8,true),tz:dv.getInt16(14,true)};
+  const d=f.subarray(16,f.length-4);
+  const mins=[]; let h=head.ts, i=0;
+  const add=(steps,points,varc)=>{mins.push({t:h,steps,points,varc});h+=60};
+  const SIZE={202:2,203:2,205:6,206:4,207:2,208:4,209:6,210:2,211:2,212:2,213:2,214:2,215:2,216:2,217:2,218:2,219:2,221:2,222:2,223:2,224:2,225:2};
+  while(i<d.length){
+    const b0=d[i];
+    if(b0<200){
+      if(i+2>d.length) break;
+      const b1=d[i+1];
+      if(b0&1) add(b0&14, b1&3, (b1>>2)+((b0>>4)<<6)); else add(b0,b1,10000);
+      i+=2;
+    }else if(b0===200||b0===201){ // idle block of N minutes
+      const n=d[i+1]; if(n>=1&&n<=253){for(let k=0;k<n;k++){mins.push({t:h,steps:0,points:0,varc:0,idle:1});h+=60}} i+=2;
+    }else if(b0===204){ // timestamp reset
+      if(i+10>d.length) break; h=new DataView(d.buffer,d.byteOffset+i+2,4).getUint32(0,true); i+=10;
+    }else if(b0===220){
+      if(i+6>d.length) break; const v=new DataView(d.buffer,d.byteOffset+i+2,4); add(v.getUint16(0,true),v.getUint16(2,true),10000); i+=6;
+    }else{ i+=SIZE[b0]||2 }
+  }
+  return {head,mins};
+}
+/* storage of parsed minutes on this phone */
+function loadMins(){try{return JSON.parse(localStorage.getItem('rayMins')||'{}')}catch(e){return {}}}
+function saveMins(m){try{localStorage.setItem('rayMins',JSON.stringify(m))}catch(e){}}
+function merge(list){const m=loadMins();for(const x of list){m[x.t]=[x.steps,x.points,x.varc]}saveMins(m);return m}
+
+/* sleep estimate: night window 20:00-12:00, minutes with no steps.
+   deep = run of >=20 still minutes (core), light = still but near movement, wake = steps */
+function sleepFor(mins){
+  if(!mins.length) return null;
+  const night=mins.filter(x=>{const hr=new Date(x.t*1000).getHours();return hr>=20||hr<12});
+  if(night.length<60) return null;
+  // find longest block where moving minutes are sparse (<= 3 active minutes in any 15)
+  const act=night.map(x=>x.steps>2?1:0);
+  let best=[0,-1],start=-1;
+  for(let k=0;k<act.length;k++){
+    let s=0;for(let j=Math.max(0,k-7);j<=Math.min(act.length-1,k+7);j++)s+=act[j];
+    const asleep=s<=3;
+    if(asleep&&start<0)start=k;
+    if((!asleep||k===act.length-1)&&start>=0){const e=asleep?k:k-1;if(e-start>best[1]-best[0])best=[start,e];start=-1}
+  }
+  if(best[1]-best[0]<45) return null;
+  const seg=night.slice(best[0],best[1]+1);
+  const st=seg.map((x,k)=>{
+    if(x.steps>2) return 'wake';
+    let run=0;for(let j=Math.max(0,k-10);j<=Math.min(seg.length-1,k+10);j++) if(seg[j].steps===0&&(seg[j].points||0)===0) run++;
+    return run>=19?'deep':'light';
+  });
+  const c={deep:0,light:0,wake:0};st.forEach(s=>c[s]++);
+  return {from:seg[0].t,to:seg[seg.length-1].t+60,st,c};
+}
+const fmtH=m=>`${Math.floor(m/60)}س ${m%60}د`;
+const pad=n=>String(n).padStart(2,'0');
+function render(){
+  const m=loadMins(); const keys=Object.keys(m).map(Number).sort((a,b)=>a-b);
+  const box=$('days'); box.textContent='';
+  if(!keys.length){return}
+  const all=keys.map(t=>({t,steps:m[t][0],points:m[t][1],varc:m[t][2]}));
+  const byDay={};
+  for(const x of all){const d=new Date(x.t*1000);const k=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;(byDay[k]=byDay[k]||[]).push(x)}
+  $('actInfo').textContent=`${all.length.toLocaleString('en')} دقيقة محفوظة`;
+  const days=Object.keys(byDay).sort().reverse();
+  for(const k of days){
+    const list=byDay[k]; const hours=new Array(24).fill(0);
+    let steps=0;for(const x of list){steps+=x.steps;hours[new Date(x.t*1000).getHours()]+=x.steps}
+    const max=Math.max(1,...hours);
+    const el=document.createElement('div');el.className='day';
+    el.innerHTML=`<div class="dayh"><span>${k}</span><span class="steps">${steps.toLocaleString('en')} خطوة</span></div>
+      <div class="bars">${hours.map(v=>`<i style="height:${Math.round(v/max*100)}%" title="${v}"></i>`).join('')}</div>
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>`;
+    // sleep: night ending this morning = previous evening + this morning
+    const prevEve=all.filter(x=>{const d=new Date(x.t*1000);const dk=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      const hr=d.getHours(); return (dk===k&&hr<12)||(dk<k&&hr>=20&&(new Date(k).getTime()-x.t*1000)<36*3600e3)});
+    const s=sleepFor(prevEve);
+    if(s){
+      const tot=s.c.deep+s.c.light;
+      const runs=[];let cur=null;for(const v of s.st){if(cur&&cur.v===v)cur.n++;else{cur={v,n:1};runs.push(cur)}}
+      const f=new Date(s.from*1000),t=new Date(s.to*1000);
+      const sl=document.createElement('div');sl.className='sleep';
+      sl.innerHTML=`<div class="dayh"><span>النوم ${pad(f.getHours())}:${pad(f.getMinutes())} ← ${pad(t.getHours())}:${pad(t.getMinutes())}</span><span class="steps">${fmtH(tot)}</span></div>
+        <div class="sleepbar">${runs.map(r=>`<span class="s-${r.v}" style="width:${r.n/s.st.length*100}%"></span>`).join('')}</div>
+        <div class="legend"><span><b class="s-deep"></b>عميق <span class="v">${fmtH(s.c.deep)}</span></span><span><b class="s-light"></b>خفيف <span class="v">${fmtH(s.c.light)}</span></span><span><b class="s-wake"></b>صاحي <span class="v">${fmtH(s.c.wake)}</span></span></div>`;
+      el.appendChild(sl);
+    }
+    box.appendChild(el);
+  }
+}
+async function pull(){
+  if(!fctl){log('خانات الملفات مو جاهزة، سوّ اتصال من جديد');return}
+  $('bPull').disabled=true;
+  try{
+    log('أطلب ملف الحركة...');
+    const f=await getActivityFile();
+    log('وصل الملف: '+f.length+' بايت');
+    const p=parseFile(f);
+    if(!p){log('الملف فاضي أو قصير');return}
+    const d=new Date(p.head.ts*1000);
+    log(`الملف: format ${p.head.format}، يبدأ ${d.toLocaleString('en-GB')}، ${p.mins.length} دقيقة`);
+    merge(p.mins); render(); $('nextBox').hidden=false;
+  }catch(e){log('خطأ: '+e.message)}
+  finally{$('bPull').disabled=!(dev&&dev.gatt.connected)}
+}
+async function eraseAndNext(){
+  $('nextConfirm').hidden=true;
+  try{
+    const req=new Uint8Array([3,0x00,0x01]); log('→F '+hex(req)+' (مسح)');
+    if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req);
+    await new Promise(r=>setTimeout(r,1500));
+    await pull();
+  }catch(e){log('خطأ: '+e.message)}
+}
+$('bPull').onclick=pull;
+$('bNext').onclick=()=>{$('nextConfirm').hidden=false};
+$('bNextNo').onclick=()=>{$('nextConfirm').hidden=true};
+$('bNextYes').onclick=eraseAndNext;
+render();
+
+$('bConnect').onclick=()=>{ if(dev&&dev.gatt.connected){dev.gatt.disconnect()} else connect() };
+$('bRead').onclick=readAll;
+$('bSync').onclick=syncTime;
+$('bBlink').onclick=blink;
+$('bSend').onclick=sendHex;
+$('hex').addEventListener('keydown',e=>{if(e.key==='Enter')sendHex()});
+</script>
