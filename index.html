@@ -1,7 +1,15 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>مختبر الراي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
+[hidden]{display:none!important}
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box}
 /* Layout: one narrow column, a status strip, a grid of big readings, then actions and a raw byte log */
 :root{
   --bg:#f3f5f4; --panel:#ffffff; --fg:#14201c; --muted:#5d6b66; --line:#d9e0dd;
@@ -67,6 +75,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 button.danger{background:var(--warn);color:var(--panel);border-color:var(--warn)}
 </style>
 
+</head>
+<body>
 <div class="wrap" dir="rtl">
   <header>
     <h1>مختبر الراي</h1>
@@ -401,3 +411,6 @@ $('bBlink').onclick=blink;
 $('bSend').onclick=sendHex;
 $('hex').addEventListener('keydown',e=>{if(e.key==='Enter')sendHex()});
 </script>
+
+</body>
+</html>
