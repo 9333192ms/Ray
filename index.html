@@ -290,6 +290,8 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
         <button id="bExport">حفظ نسخة احتياطية</button>
         <button id="bImport">استرجاع نسخة</button>
       </div>
+      <button id="bCopyRaw">نسخ ملف الساعة الخام (للمهندس)</button>
+      <textarea id="rawBox" readonly style="display:none;width:100%;height:120px;font-family:var(--f-mono);font-size:.7rem;direction:ltr;background:var(--code-bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px"></textarea>
       <input id="fImport" type="file" accept=".json,application/json" style="display:none">
       <p id="toast" class="toast"></p>
     </div>
@@ -402,7 +404,7 @@ async function connect(){
     log('اخترت: '+(d.name||'?'));
     await setup(d,20);
   }catch(e){
-    log('خطأ: '+e.message);
+    log('خطأ: '+(e.message||e.name||e));
     setConn('off',/cancel/i.test(e.message)?'غير متصل':'ما اتصل. إذا تكرر: الإعدادات ← بلوتوث ← (i) جنب الساعة ← انسَ الجهاز');
   }finally{busy=false}
 }
@@ -770,6 +772,14 @@ $('bExport').onclick=async()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
   toast('نزل الملف '+name+'، احفظه في الملفات');
 };
+$('bCopyRaw').onclick=async()=>{
+  const raw=lsGet('rayRaw','');
+  if(!raw){toast('ما فيه ملف خام، اتصل واسحب الحركة أول');return}
+  const txt='RAYRAW '+JSON.stringify({v:5,rawAt:+lsGet('rayRawAt',0),tz:-new Date().getTimezoneOffset(),points:$('vPts').textContent,raw});
+  const box=$('rawBox');box.value=txt;box.style.display='block';box.focus();box.select();box.setSelectionRange(0,txt.length);
+  let ok=false;try{await navigator.clipboard.writeText(txt);ok=true}catch(e){try{ok=document.execCommand('copy')}catch(_){}}
+  toast(ok?`انسخ ✅ (${fmtN(txt.length)} حرف). روح للمحادثة والصقه`:'حدّد النص اللي تحت كله وانسخه يدوي');
+};
 $('bImport').onclick=()=>$('fImport').click();
 $('fImport').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
@@ -802,7 +812,7 @@ render();
   const k=await knownDevice(); if(!k) return;
   log('فتحت الصفحة، أرجّع الاتصال بالساعة المحفوظة');
   busy=true;setConn('busy','أرجّع الاتصال...');
-  try{await setup(k,12)}catch(e){log('ما رجع: '+e.message);setConn('off','اضغط اتصال')}finally{busy=false}
+  try{await setup(k,12)}catch(e){log('ما رجع: '+(e.message||e.name||e));setConn('off','اضغط اتصال')}finally{busy=false}
 })();
 </script>
 </body>
