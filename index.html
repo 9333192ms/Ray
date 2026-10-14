@@ -522,6 +522,9 @@ function parseFile(f){
   const head={handle:dv.getUint16(0,true),format:dv.getUint16(2,true),length:dv.getUint32(4,true),ts:dv.getUint32(8,true),tz:dv.getInt16(14,true)};
   const d=f.subarray(16,f.length-4);
   const mins=[]; let h=head.ts, i=0;
+  // settings block: 2-byte pairs ending with FE FE, before the minute records.
+  // (reading it as minutes is what made a fake ~477-step minute at the start of every file)
+  for(let j=0;j+1<Math.min(d.length,96);j+=2){ if(d[j]===0xFE&&d[j+1]===0xFE){ i=j+2; break } }
   const add=(steps,points,varc)=>{mins.push({t:h,steps,points,varc});h+=60};
   const SIZE={202:2,203:2,205:6,206:4,207:2,208:4,209:6,210:2,211:2,212:2,213:2,214:2,215:2,216:2,217:2,218:2,219:2,221:2,222:2,223:2,224:2,225:2};
   while(i<d.length){
@@ -805,6 +808,12 @@ $('bNext').onclick=()=>show($('nextConfirm'),'flex');
 $('bNextNo').onclick=()=>hide($('nextConfirm'));
 $('bNextYes').onclick=eraseAndNext;
 $('bForget').onclick=()=>{if(dev&&dev.gatt.connected)dev.gatt.disconnect();lsSet('rayId','');skipKnown=true;dev=null;log('نسيت الساعة المحفوظة');setConn('off','غير متصل')};
+(function cleanFake(){
+  if(lsGet('rayClean1','')) return;
+  const m=loadMins(); let n=0;
+  for(const k in m){ const r=m[k]; if(r[0]>220||r[1]>255){ delete m[k]; n++ } }
+  saveMins(m); lsSet('rayClean1','1'); if(n) log(`نظّفت ${n} دقيقة غلط من الحسبة القديمة`);
+})();
 render();
 /* after a refresh: connect to the remembered watch by itself (needs no tap) */
 (async()=>{
