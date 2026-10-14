@@ -542,7 +542,21 @@ function parseFile(f){
 /* storage of parsed minutes on this phone */
 function loadMins(){try{return JSON.parse(localStorage.getItem('rayMins')||'{}')}catch(e){return {}}}
 function saveMins(m){try{localStorage.setItem('rayMins',JSON.stringify(m))}catch(e){log('ما قدرت أحفظ: '+e.message)}}
-function merge(list){const m=loadMins();for(const x of list){m[x.t]=[x.steps,x.points,x.varc]}saveMins(m);return m}
+/* the file is re-read whole on every pull, so its time range is replaced (never added twice) */
+function merge(list){
+  const m=loadMins(); if(!list.length) return m;
+  const a=list[0].t, b=list[list.length-1].t;
+  for(const k in m){const t=+k; if(t>=a&&t<=b) delete m[k]}
+  for(const x of list){m[x.t]=[x.steps,x.points,x.varc]}
+  saveMins(m); return m;
+}
+/* the newest minute can't be in the future: if the record count runs ahead of the clock, slide the file back */
+function anchor(list){
+  if(!list.length) return 0;
+  const nowMin=Math.floor(Date.now()/60000)*60, last=list[list.length-1].t;
+  if(last<=nowMin) return 0;
+  const sh=nowMin-last; for(const x of list) x.t+=sh; return sh;
+}
 
 async function pull(){
   if(!fctl){log('خانات الملفات مو جاهزة، سوّ اتصال من جديد');return}
@@ -555,6 +569,7 @@ async function pull(){
     const p=parseFile(f);
     if(!p){log('الملف فاضي أو قصير');return}
     log(`الملف: format ${p.head.format}، يبدأ ${new Date(p.head.ts*1000).toLocaleString('en-GB')}، ${p.mins.length} دقيقة`);
+    const sh=anchor(p.mins); if(sh) log(`الملف كان سابق الوقت بـ ${-sh/60} دقيقة، رجّعته`);
     merge(p.mins); lsSet('rayLastPull',Math.floor(Date.now()/1000)); render(); show($('nextBox'),'grid');
   }catch(e){log('خطأ: '+e.message)}
   finally{const on=!!(dev&&dev.gatt.connected);$('bPull').disabled=!on;if(on)$('stxt').textContent='متصل: '+(dev.name||'Ray')}
