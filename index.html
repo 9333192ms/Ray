@@ -13,12 +13,15 @@ body{margin:0}
   --bg:#f3f5f4; --panel:#ffffff; --fg:#14201c; --muted:#5d6b66; --line:#d9e0dd;
   --accent:#0f7a5c; --accent-fg:#ffffff; --warn:#b4541a; --ok:#0f7a5c; --code-bg:#e9eeec; --track:#e2e8e5;
   --deep:#1f4f8f; --light:#7fa8d9; --wake:#e3b25b;
+  --r1:#0f9d6e; --r1b:#0b6b4b; --r1t:#d5ece3; --r2:#e07b00; --r2t:#f6e2c8; --r3:#2a7bd6; --r3t:#d6e5f6;
   --f-body:"IBM Plex Sans Arabic",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --r1:#3fe0a4; --r1b:#b6ffe0; --r1t:#163a2e; --r2:#ffa23a; --r2t:#3b2a14; --r3:#5aa9ff; --r3t:#172c44;
   --bg:#0e1513; --panel:#16201d; --fg:#e4ece9; --muted:#8fa19a; --line:#26332f; --track:#22302b;
   --accent:#3fc79a; --accent-fg:#06120e; --warn:#f0a36a; --ok:#3fc79a; --code-bg:#0b110f; color-scheme:dark}}
 :root[data-theme="dark"]{
+  --r1:#3fe0a4; --r1b:#b6ffe0; --r1t:#163a2e; --r2:#ffa23a; --r2t:#3b2a14; --r3:#5aa9ff; --r3t:#172c44;
   --bg:#0e1513; --panel:#16201d; --fg:#e4ece9; --muted:#8fa19a; --line:#26332f; --track:#22302b;
   --accent:#3fc79a; --accent-fg:#06120e; --warn:#f0a36a; --ok:#3fc79a; --code-bg:#0b110f; color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
@@ -45,7 +48,14 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 
 /* today */
 .today{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
-.ring{position:relative;width:132px;height:132px}
+.ring{position:relative;width:140px;height:140px}
+.rl{display:grid;gap:10px;min-width:0}
+.ri{display:grid;gap:0}
+.ri .k{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ri .k b{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ri .v{font-family:var(--f-mono);font-size:1.35rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.ri .v small{font-size:.8rem;color:var(--muted);font-weight:400}
+.hyp{width:100%;height:84px;display:block;border-radius:6px;background:var(--code-bg)}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring .in{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.15}
 .ring .big{font-family:var(--f-mono);font-size:1.6rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -69,7 +79,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .legend .v{font-family:var(--f-mono);color:var(--fg)}
 
 /* week */
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:120px;position:relative}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:140px;position:relative}
 .week .col{display:grid;grid-template-rows:1fr auto;height:100%;gap:4px;text-align:center}
 .week .bar{align-self:end;background:var(--accent);opacity:.55;border-radius:4px 4px 0 0;min-height:2px}
 .week .col.hit .bar{opacity:1}
@@ -112,13 +122,40 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
 .set label{font-size:.85rem;color:var(--muted)}
 .log pre{margin:0;background:var(--code-bg);border-radius:10px;padding:10px 12px;font-family:var(--f-mono);font-size:.75rem;line-height:1.5;max-height:260px;overflow:auto;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-all}
 .toast{font-size:.85rem;color:var(--muted)}
+.hello{display:flex;justify-content:space-between;align-items:end;gap:8px;flex-wrap:wrap}
+.hello .date{font-size:.85rem;color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--code-bg);font-size:.8rem;color:var(--muted)}
+.chip b{font-family:var(--f-mono);color:var(--fg);font-weight:600}
+.batt{width:22px;height:11px;border:1.5px solid var(--muted);border-radius:3px;position:relative;display:inline-block}
+.batt::after{content:"";position:absolute;inset-inline-end:-4px;top:2.5px;width:2px;height:4px;background:var(--muted);border-radius:1px}
+.batt i{position:absolute;inset:1px;inset-inline-start:auto;background:var(--ok);border-radius:1px}
+.batt.low i{background:var(--warn)}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.statrow .stat{text-align:center}
+.hours{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:40px;direction:ltr}
+.hours i{display:block;background:var(--r1);border-radius:2px 2px 0 0;min-height:2px;opacity:.75}
+.hours i.now{opacity:1;outline:1px solid var(--fg);outline-offset:1px}
+.hours i.empty{background:var(--track);opacity:1}
+.msg{font-weight:600}
+.week .col.none .bar{background:transparent;border:1.5px dashed var(--line);min-height:28px;opacity:1}
+.week .val{font-family:var(--f-mono);font-size:.65rem;color:var(--muted);line-height:1}
+.week .col{grid-template-rows:1fr auto auto}
+.recs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rec{background:var(--code-bg);border-radius:10px;padding:10px;display:grid;gap:0;text-align:center}
+.rec .k{font-size:.72rem;color:var(--muted)}
+.rec .v{font-family:var(--f-mono);font-size:1.1rem;font-weight:600}
+.rec .n{font-size:.7rem;color:var(--muted)}
+@keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+.ring.done{animation:pop .6s ease-out}
+@media (prefers-reduced-motion:reduce){.ring.done{animation:none}}
 </style>
 </head>
 <body>
 <div class="wrap" dir="rtl">
-  <header>
-    <h1>مختبر الراي</h1>
-    <p class="sub">ساعة Misfit Ray بدون تطبيق Misfit. افتحها من Bluefy.</p>
+  <header class="hello">
+    <div><h1 id="hi">مختبر الراي</h1><p class="sub">ساعة Misfit Ray بدون تطبيق Misfit</p></div>
+    <span id="today" class="date"></span>
   </header>
 
   <div id="nobt" class="err" style="display:none">هذا المتصفح ما يقدر يوصل للبلوتوث. افتح الصفحة من <b>Bluefy</b> في الآيفون، وتأكد إن البلوتوث شغال.</div>
@@ -129,7 +166,12 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
       <div class="txt"><div id="stxt">غير متصل</div><div id="serial" class="serial"></div></div>
       <button id="bConnect" class="primary">اتصال</button>
     </div>
-    <p id="lastSync" class="hint"></p>
+    <div class="chips">
+      <span class="chip"><span id="battIcon" class="batt"><i style="width:0"></i></span><b id="vBat">—</b></span>
+      <span class="chip">نقاط Misfit <b id="vPts">—</b></span>
+      <span class="chip" id="lastSync">ما سحبنا لين الحين</span>
+    </div>
+    <button id="bRefresh" class="primary" style="display:none">تحديث الحركة من الساعة</button>
   </div>
 
   <!-- اليوم -->
@@ -137,19 +179,34 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
     <div class="today">
       <div class="ring">
         <svg viewBox="0 0 120 120" aria-hidden="true">
-          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--track)" stroke-width="12"/>
-          <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--r1t)" stroke-width="12"/>
+          <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="var(--r1)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle id="ringArc2" cx="60" cy="60" r="52" fill="none" stroke="var(--r1b)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle cx="60" cy="60" r="38" fill="none" stroke="var(--r2t)" stroke-width="12"/>
+          <circle id="ringB" cx="60" cy="60" r="38" fill="none" stroke="var(--r2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle cx="60" cy="60" r="24" fill="none" stroke="var(--r3t)" stroke-width="12"/>
+          <circle id="ringC" cx="60" cy="60" r="24" fill="none" stroke="var(--r3)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
         </svg>
-        <div class="in"><span id="tSteps" class="big">—</span><span id="tGoal" class="of">خطوة</span></div>
       </div>
-      <div class="stats">
-        <div class="stat"><span class="k">المسافة</span><span class="v" id="tKm">—</span></div>
-        <div class="stat"><span class="k">دقايق مشي</span><span class="v" id="tAct">—</span></div>
-        <div class="stat"><span class="k">نقاط Misfit</span><span class="v" id="vPts">—</span></div>
-        <div class="stat"><span class="k">البطارية</span><span class="v" id="vBat">—</span></div>
+      <div class="rl">
+        <div class="ri"><span class="k"><b style="background:var(--r1)"></b>الخطوات</span><span class="v"><span id="tSteps">—</span><small id="tGoal"></small></span></div>
+        <div class="ri"><span class="k"><b style="background:var(--r2)"></b>دقايق نشاط</span><span class="v"><span id="tAct">—</span><small id="tActG"></small></span></div>
+        <div class="ri"><span class="k"><b style="background:var(--r3)"></b>ساعات تحركت فيها</span><span class="v"><span id="tHrs">—</span><small id="tHrsG"></small></span></div>
       </div>
     </div>
-    <p id="tNote" class="hint"></p>
+    <div style="display:grid;gap:2px">
+      <span id="tMsg" class="msg">اليوم</span>
+      <p id="tNote" class="hint"></p>
+    </div>
+    <div class="statrow">
+      <div class="stat"><span class="k">المسافة</span><span class="v" id="tKm">—</span></div>
+      <div class="stat"><span class="k">السرعة</span><span class="v" id="tPace">—</span></div>
+      <div class="stat"><span class="k">سعرات الحركة</span><span class="v" id="tCal">—</span></div>
+    </div>
+    <div style="display:grid;gap:4px">
+      <div id="tHours" class="hours"></div>
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+    </div>
   </section>
 
   <!-- النوم -->
@@ -166,6 +223,11 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
     <h2>آخر ٧ أيام</h2>
     <div id="week" class="week"></div>
     <div id="weekSum" class="weeksum"></div>
+  </section>
+
+  <section class="card" aria-label="أرقامك">
+    <h2>أرقامك</h2>
+    <div id="recs" class="recs"></div>
   </section>
 
   <!-- كل الأيام -->
@@ -208,8 +270,12 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
         <input id="goal" class="num" type="number" inputmode="numeric" min="1000" step="500" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
       </div>
       <div class="set">
-        <label for="stride">طول الخطوة (سم) للمسافة</label>
-        <input id="stride" class="num" type="number" inputmode="numeric" min="40" max="110" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+        <label for="height">طولك (سم) عشان المسافة تطلع أدق</label>
+        <input id="height" placeholder="مثال: 175" class="num" type="number" inputmode="numeric" min="120" max="220" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+      </div>
+      <div class="set">
+        <label for="weight">وزنك (كجم) عشان السعرات</label>
+        <input id="weight" class="num" type="number" inputmode="numeric" min="30" max="250" placeholder="مثال: 80" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
       </div>
       <div class="set">
         <label for="sens">حساسية النوم</label>
@@ -259,6 +325,7 @@ const fmtN=n=>Math.round(n).toLocaleString('en');
 const fmtH=m=>`${Math.floor(m/60)}س ${pad(m%60)}د`;
 const hm=t=>{const d=new Date(t*1000);return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
 const dkey=t=>{const d=new Date(t*1000);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const DAYS=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}}
@@ -266,11 +333,12 @@ function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function log(s){const p=$('log');const t=new Date().toLocaleTimeString('en-GB');p.textContent=`${t}  ${s}\n`+p.textContent}
 
 /* ---------- settings ---------- */
-const S={get goal(){return +lsGet('rayGoal',8000)||8000},get stride(){return +lsGet('rayStride',75)||75},
-  get sens(){return +lsGet('raySens',1)||1},get auto(){return lsGet('rayAuto','1')==='1'}};
-$('goal').value=S.goal;$('stride').value=S.stride;$('sens').value=String(S.sens);$('autoPull').checked=S.auto;
+const S={get goal(){return +lsGet('rayGoal',8000)||8000},get height(){return +lsGet('rayHeight',0)||0},get stride(){return S.height?S.height*0.415:75},
+  get weight(){return +lsGet('rayWeight',0)||0},get sens(){return +lsGet('raySens',1)||1},get auto(){return lsGet('rayAuto','1')==='1'}};
+$('goal').value=S.goal;if(S.height)$('height').value=S.height;if(S.weight)$('weight').value=S.weight;$('sens').value=String(S.sens);$('autoPull').checked=S.auto;
 $('goal').onchange=e=>{const v=Math.max(1000,+e.target.value||8000);lsSet('rayGoal',v);e.target.value=v;render()};
-$('stride').onchange=e=>{const v=Math.min(110,Math.max(40,+e.target.value||75));lsSet('rayStride',v);e.target.value=v;render()};
+$('height').onchange=e=>{const v=+e.target.value;lsSet('rayHeight',v>=120&&v<=220?v:0);render()};
+$('weight').onchange=e=>{const v=+e.target.value;lsSet('rayWeight',v>=30&&v<=250?v:0);render()};
 $('sens').onchange=e=>{lsSet('raySens',e.target.value);render()};
 $('autoPull').onchange=e=>lsSet('rayAuto',e.target.checked?'1':'0');
 
@@ -279,7 +347,8 @@ function setConn(state,txt){
   const st=$('status');st.classList.toggle('on',state==='on');st.classList.toggle('busy',state==='busy');
   $('stxt').textContent=txt;
   const on=state==='on';
-  ['bRead','bSync','bBlink','bSend','bPull','bNext'].forEach(i=>$(i).disabled=!on);
+  ['bRead','bSync','bBlink','bSend','bPull','bNext','bRefresh'].forEach(i=>$(i).disabled=!on);
+  $('bRefresh').style.display=on?'':'none';
   $('bConnect').textContent=on?'قطع':'اتصال';
   $('bConnect').disabled=state==='busy';
 }
@@ -364,7 +433,7 @@ async function setup(d,secs){
 async function readBattery(){
   if(!battChar) return;
   const v=(await battChar.readValue()).getUint8(0);
-  $('vBat').innerHTML=`${v}<small>٪</small>`;lsSet('rayBat',v);
+  lsSet('rayBat',v);showBat(v);
 }
 async function readPoints(){
   const b=await ask(6);
@@ -542,6 +611,17 @@ function nightFor(m,dayKey){
   let wakes=0,w=0;for(const v of st){if(v==='wake')w++;else{if(w>=3)wakes++;w=0}}  // awakenings of 3+ minutes
   return {from:start+best[0]*60,to:start+(best[1]+1)*60,st,c,wakes};
 }
+function hypno(s){
+  const N=s.st.length, Y={wake:8,light:34,deep:60}, H=16, col={wake:'var(--wake)',light:'var(--light)',deep:'var(--deep)'};
+  const runs=[];let cur=null,i=0;for(const v of s.st){if(cur&&cur.v===v)cur.n++;else{cur={v,n:1,x:i};runs.push(cur)}i++}
+  let path='';runs.forEach((r,k)=>{if(k){path+=`M${r.x} ${Y[runs[k-1].v]+H/2}V${Y[r.v]+H/2}`}});
+  const ticks=[];for(let t=Math.ceil(s.from/3600)*3600;t<s.to;t+=3600){const x=(t-s.from)/60;if(x>N*.06&&x<N*.94)ticks.push(`<line x1="${x}" x2="${x}" y1="0" y2="80" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>`)}
+  return `<svg class="hyp" viewBox="0 0 ${N} 80" preserveAspectRatio="none" aria-label="مراحل النوم">${ticks.join('')}
+    <path d="${path}" stroke="var(--muted)" stroke-width="1" vector-effect="non-scaling-stroke" fill="none" opacity=".35"/>
+    ${runs.map(r=>`<rect x="${r.x}" y="${Y[r.v]}" width="${r.n}" height="${H}" fill="${col[r.v]}"/>`).join('')}</svg>
+    <div class="saxis"><span>${hm(s.from)}</span><span>${hm(s.to)}</span></div>
+    <div class="legend"><span><b class="s-wake"></b>صاحي <span class="v">${fmtH(s.c.wake)}</span></span><span><b class="s-light"></b>خفيف <span class="v">${fmtH(s.c.light)}</span></span><span><b class="s-deep"></b>عميق <span class="v">${fmtH(s.c.deep)}</span></span></div>`;
+}
 function sleepBar(s){
   const runs=[];let cur=null;for(const v of s.st){if(cur&&cur.v===v)cur.n++;else{cur={v,n:1};runs.push(cur)}}
   return `<div class="sleepbar">${runs.map(r=>`<span class="s-${r.v}" style="width:${r.n/s.st.length*100}%"></span>`).join('')}</div>
@@ -550,31 +630,61 @@ function sleepBar(s){
 }
 
 /* ---------- render ---------- */
+function showBat(v){
+  if(v===null||v===undefined||v==='')return; v=+v;
+  $('vBat').textContent=v+'٪';
+  const ic=$('battIcon');ic.querySelector('i').style.width=`calc(${Math.min(100,v)}% - 2px)`;ic.classList.toggle('low',v<=20);
+}
+function lastSyncText(){
+  const lp=+lsGet('rayLastPull',0); if(!lp) return 'ما سحبنا لين الحين';
+  const mins=Math.round((Date.now()/1000-lp)/60);
+  return 'آخر سحب: '+(mins<1?'الحين':mins<60?`قبل ${mins} د`:mins<24*60?`قبل ${Math.round(mins/60)} س`:`${DAYS[new Date(lp*1000).getDay()]} ${hm(lp)}`);
+}
+/* per-minute estimates, by cadence (steps in that minute):
+   distance: stride from height (×0.415); running cadence (≥140) gets a 25% longer stride
+   calories: walking/running METs by cadence, minus resting, × weight */
+const MET=c=>c<40?2.0:c<80?2.8:c<100?3.5:c<120?4.3:c<140?5.5:c<160?8.0:9.8;
+const ACT_CAD=60, HOUR_STEPS=250, ACT_GOAL=30, HRS_GOAL=9;
 function dayTotals(m){
-  const by={};
-  for(const k in m){const t=+k, r=m[k], dk=dkey(t);
-    const o=by[dk]||(by[dk]={steps:0,act:0,hours:new Array(24).fill(0),mins:0});
-    o.steps+=r[0];o.mins++;if(r[0]>=40)o.act++;o.hours[new Date(t*1000).getHours()]+=r[0]}
+  const by={}, st=S.stride/100000, W=S.weight;
+  for(const k in m){const t=+k, r=m[k], c=r[0], dk=dkey(t);
+    const o=by[dk]||(by[dk]={steps:0,act:0,hours:new Array(24).fill(0),mins:0,km:0,kcal:0,walkMin:0});
+    o.steps+=c;o.mins++;if(c>=ACT_CAD)o.act++;if(c>0)o.walkMin++;o.hours[new Date(t*1000).getHours()]+=c;
+    o.km+=c*st*(c>=140?1.25:1);
+    if(c>0&&W)o.kcal+=W*(MET(c)-1)*3.5/200;
+  }
+  for(const k in by)by[k].hrs=by[k].hours.filter(v=>v>=HOUR_STEPS).length;
   return by;
 }
 function render(){
   const m=loadMins(), by=dayTotals(m), goal=S.goal, keys=Object.keys(m);
   const today=dkey(Date.now()/1000), T=by[today];
+  // header
+  const nowD=new Date(), hr=nowD.getHours();
+  $('hi').textContent=hr<4?'سهران؟ 🌙':hr<12?'صباح الخير ☀️':hr<17?'هلا والله 👋':'مساء الخير 🌙';
+  $('today').textContent=`${DAYS[nowD.getDay()]} ${nowD.getDate()} ${MONTHS[nowD.getMonth()]}`;
   // today
-  const steps=T?T.steps:0;
-  $('tSteps').textContent=keys.length?fmtN(steps):'—';
-  $('tGoal').textContent='من '+fmtN(goal);
-  const C=2*Math.PI*52, f=Math.min(1,steps/goal);
-  $('ringArc').setAttribute('stroke-dasharray',`${(C*f).toFixed(1)} ${C.toFixed(1)}`);
-  $('tKm').innerHTML=keys.length?`${(steps*S.stride/100000).toFixed(2)}<small> كم</small>`:'—';
-  $('tAct').innerHTML=keys.length?`${T?T.act:0}<small> دقيقة</small>`:'—';
-  const bat=lsGet('rayBat',null); if(bat!==null&&$('vBat').textContent==='—') $('vBat').innerHTML=`${bat}<small>٪</small>`;
-  const last=keys.length?Math.max(...keys.map(Number)):0;
-  $('tNote').textContent=!keys.length?'اضغط اتصال عشان نسحب الحركة من الساعة.'
-    : steps>=goal?'وصلت الهدف اليوم 👏'
-    : `باقي ${fmtN(goal-steps)} خطوة على الهدف. آخر دقيقة مسجّلة ${hm(last+60)}.`;
-  const lp=+lsGet('rayLastPull',0);
-  $('lastSync').textContent=lp?`آخر سحب: ${dkey(lp)===dkey(Date.now()/1000)?'اليوم':DAYS[new Date(lp*1000).getDay()]} ${hm(lp)}`:'';
+  const steps=T?T.steps:0, has=keys.length>0;
+  const C1=2*Math.PI*52, C2=2*Math.PI*38, C3=2*Math.PI*24, f=steps/goal;
+  const arc=(id,C,x)=>$(id).setAttribute('stroke-dasharray',`${(C*Math.max(0,Math.min(1,x))).toFixed(1)} ${C.toFixed(1)}`);
+  arc('ringArc',C1,f); arc('ringArc2',C1,f-1);
+  arc('ringB',C2,(T?T.act:0)/ACT_GOAL); arc('ringC',C3,(T?T.hrs:0)/HRS_GOAL);
+  const ring=document.querySelector('.ring'); if(f>=1&&!ring.dataset.popped){ring.dataset.popped=1;ring.classList.add('done')}
+  $('tSteps').textContent=has?fmtN(steps):'—'; $('tGoal').textContent=' / '+fmtN(goal);
+  $('tAct').textContent=has?(T?T.act:0):'—'; $('tActG').textContent=` / ${ACT_GOAL} د`;
+  $('tHrs').textContent=has?(T?T.hrs:0):'—'; $('tHrsG').textContent=` / ${HRS_GOAL}`;
+  $('tKm').innerHTML=has?`${(T?T.km:0).toFixed(2)}<small> كم</small>`:'—';
+  $('tPace').innerHTML=has&&T&&T.walkMin?`${fmtN(T.steps/T.walkMin)}<small> خطوة/د</small>`:'—';
+  $('tCal').innerHTML=!has?'—':S.weight?`${fmtN(T?T.kcal:0)}<small> س.ح</small>`:'<small>حط وزنك في الإعدادات</small>';
+  showBat(lsGet('rayBat',null));
+  const last=has?Math.max(...keys.map(Number)):0;
+  const closed=[f>=1,(T?T.act:0)>=ACT_GOAL,(T?T.hrs:0)>=HRS_GOAL].filter(Boolean).length;
+  $('tMsg').textContent=!has?'نبدأ؟':closed===3?'سكّرت الحلقات الثلاث 🏆':f>=2?'ضعف هدف الخطوات! 🔥':f>=1?'وصلت هدف الخطوات 👏':f>=.75?'قربت، كمّل 💪':'اليوم';
+  $('tNote').textContent=!has?'اضغط اتصال عشان نسحب الحركة من الساعة.'
+    : (f>=1?`زدت على الهدف ${fmtN(steps-goal)} خطوة.`:`باقي ${fmtN(goal-steps)} خطوة، تقريباً ${Math.max(1,Math.round((goal-steps)/100))} دقيقة مشي.`)+` آخر تحديث ${hm(last+60)}.`;
+  const hrs=T?T.hours:new Array(24).fill(0), hmx=Math.max(1,...hrs);
+  $('tHours').innerHTML=hrs.map((v,i)=>`<i class="${i===hr?'now':''}${v===0&&i<=hr?' empty':''}" style="height:${i>hr?0:Math.max(6,Math.round(v/hmx*100))}%;${v>=HOUR_STEPS?'':'opacity:.45'}" title="${i}:00 · ${fmtN(v)}"></i>`).join('');
+  $('lastSync').textContent=lastSyncText();
 
   // last night
   const s=keys.length?nightFor(m,today):null;
@@ -582,7 +692,7 @@ function render(){
     const tot=s.c.deep+s.c.light;
     $('nRange').textContent=`${hm(s.from)} ← ${hm(s.to)}`;
     $('nightBody').innerHTML=`<div class="nighthead"><span class="big">${fmtH(tot)}</span>
-      <span class="mini">عميق ${Math.round(s.c.deep/Math.max(1,tot)*100)}٪ · صحيت ${s.wakes} ${s.wakes===1?'مرة':'مرات'}</span></div>${sleepBar(s)}
+      <span class="mini">عميق ${Math.round(s.c.deep/Math.max(1,tot)*100)}٪ · صحيت ${s.wakes} ${s.wakes===1?'مرة':'مرات'}</span></div>${hypno(s)}
       <p class="hint">تقدير من حركة اليد، مو قياس طبي. إذا تحس الرقم غلط غيّر "حساسية النوم" من الإعدادات.</p>`;
   }else{
     $('nRange').textContent='';
@@ -591,12 +701,27 @@ function render(){
 
   // week
   const wk=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);wk.push({k:dkey(d/1000),dow:d.getDay(),now:i===0})}
-  const vals=wk.map(w=>by[w.k]?by[w.k].steps:0), max=Math.max(goal*1.15,...vals);
-  $('week').innerHTML=wk.map((w,i)=>`<div class="col${vals[i]>=goal?' hit':''}${w.now?' now':''}"><div class="bar" style="height:${vals[i]/max*100}%" title="${fmtN(vals[i])}"></div><span class="lbl">${w.now?'اليوم':DAYS[w.dow]}</span></div>`).join('')
-    +`<div class="goal" style="bottom:calc(${goal/max} * (100% - 22px) + 22px)"></div>`;
-  const withData=vals.filter((v,i)=>by[wk[i].k]);
+  const vals=wk.map(w=>by[w.k]?by[w.k].steps:null), max=Math.max(goal*1.15,...vals.map(v=>v||0));
+  const short=v=>v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':String(v);
+  $('week').innerHTML=wk.map((w,i)=>{const v=vals[i];
+    return `<div class="col${v===null?' none':''}${v>=goal?' hit':''}${w.now?' now':''}"><div class="bar" style="height:${v===null?0:v/max*100}%"></div><span class="val">${v===null?'—':short(v)}</span><span class="lbl">${w.now?'اليوم':DAYS[w.dow]}</span></div>`}).join('')
+    +`<div class="goal" style="bottom:calc(${goal/max} * (100% - 40px) + 40px)"></div>`;
+  const withData=vals.filter(v=>v!==null);
   const avg=withData.length?withData.reduce((a,b)=>a+b,0)/withData.length:0;
-  $('weekSum').innerHTML=`<span>المعدل <b class="num">${fmtN(avg)}</b></span><span>وصلت الهدف <b class="num">${vals.filter(v=>v>=goal).length}</b> من ٧</span>`;
+  $('weekSum').innerHTML=`<span>المعدل <b class="num">${fmtN(avg)}</b></span><span>وصلت الهدف <b class="num">${withData.filter(v=>v>=goal).length}</b> من ${withData.length||7} ${withData.length&&withData.length<7?'أيام مسجّلة':''}</span>`;
+
+  // records
+  const dlist=Object.keys(by).sort();
+  let best=null;for(const k of dlist) if(!best||by[k].steps>by[best].steps) best=k;
+  let streak=0;{const d=new Date();d.setHours(12,0,0,0);
+    if(!(by[dkey(d/1000)]&&by[dkey(d/1000)].steps>=goal)) d.setDate(d.getDate()-1);
+    while(by[dkey(d/1000)]&&by[dkey(d/1000)].steps>=goal){streak++;d.setDate(d.getDate()-1)}}
+  const total=dlist.reduce((a,k)=>a+by[k].steps,0);
+  const bd=best?new Date(best+'T12:00'):null;
+  $('recs').innerHTML=!dlist.length?'<p class="hint" style="grid-column:1/-1">تطلع هنا أرقامك بعد أول سحب.</p>':
+    `<div class="rec"><span class="k">أفضل يوم</span><span class="v">${fmtN(by[best].steps)}</span><span class="n">${DAYS[bd.getDay()]} ${best.slice(5)}</span></div>
+     <div class="rec"><span class="k">أيام ورا بعض 🔥</span><span class="v">${streak}</span><span class="n">وصلت فيها الهدف</span></div>
+     <div class="rec"><span class="k">المجموع</span><span class="v">${dlist.reduce((a,k)=>a+by[k].km,0).toFixed(1)}</span><span class="n">كم من ${dlist.length} ${dlist.length===1?'يوم':'أيام'}</span></div>`;
 
   // all days
   const box=$('days'); box.textContent='';
@@ -619,7 +744,7 @@ function render(){
 /* ---------- backup ---------- */
 function toast(s){$('toast').textContent=s}
 $('bExport').onclick=async()=>{
-  const data={app:'ray-lab',v:4,saved:new Date().toISOString(),mins:loadMins(),goal:S.goal,stride:S.stride};
+  const data={app:'ray-lab',v:5,saved:new Date().toISOString(),mins:loadMins(),goal:S.goal,height:S.height,weight:S.weight};
   const name=`ray-${dkey(Date.now()/1000)}.json`;
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   try{
@@ -634,8 +759,8 @@ $('fImport').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d.mins)throw new Error('مو ملف الراي');
     const m=loadMins();let n=0;for(const k in d.mins){if(!m[k])n++;m[k]=d.mins[k]}saveMins(m);
-    if(d.goal)lsSet('rayGoal',d.goal);if(d.stride)lsSet('rayStride',d.stride);
-    $('goal').value=S.goal;$('stride').value=S.stride;render();toast(`رجعت ${fmtN(n)} دقيقة جديدة`)}
+    if(d.goal)lsSet('rayGoal',d.goal);if(d.height)lsSet('rayHeight',d.height);if(d.weight)lsSet('rayWeight',d.weight);
+    $('goal').value=S.goal;render();toast(`رجعت ${fmtN(n)} دقيقة جديدة`)}
   catch(err){toast('ما قدرت أقرأ الملف: '+err.message)}
   e.target.value='';
 };
@@ -648,6 +773,8 @@ $('bBlink').onclick=blink;
 $('bSend').onclick=sendHex;
 $('hex').addEventListener('keydown',e=>{if(e.key==='Enter')sendHex()});
 $('bPull').onclick=pull;
+$('bRefresh').onclick=pull;
+setInterval(()=>{if(!xfer)render()},60000);
 $('bNext').onclick=()=>show($('nextConfirm'),'flex');
 $('bNextNo').onclick=()=>hide($('nextConfirm'));
 $('bNextYes').onclick=eraseAndNext;
