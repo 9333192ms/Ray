@@ -390,17 +390,16 @@ async function connect(){
   setConn('busy','أتصل...');
   try{
     if(dev&&!dev.gatt.connected){            // same session: reconnect straight away
-      try{await setup(dev,12);return}catch(e){log('ما رجع الاتصال المباشر: '+e.message)}
+      try{await setup(dev,12);return}catch(e){log('أرجّع الاتصال من القائمة')}
     }
     const k=await knownDevice();
     if(k){
       log('الساعة المحفوظة: '+(k.name||'?')+'، أتصل مباشرة');
       try{await setup(k,12);return}
-      catch(e){log('ما ردت: '+e.message);skipKnown=true;
-        setConn('off','الساعة ما ردت. اضغط اتصال مرة ثانية عشان ندوّر عليها');return}
+      catch(e){log('المحفوظة ما ردت، أفتح القائمة');skipKnown=true}
     }
     log('أدوّر على الساعة...');
-    const d=await navigator.bluetooth.requestDevice(REQ_OPTS);
+    let d;try{d=await navigator.bluetooth.requestDevice(REQ_OPTS)}catch(e){if(/gesture|Security/i.test((e.message||'')+e.name)){setConn('off','اضغط اتصال مرة ثانية');return}throw e}
     log('اخترت: '+(d.name||'?'));
     await setup(d,20);
   }catch(e){
@@ -821,7 +820,7 @@ render();
   const k=await knownDevice(); if(!k) return;
   log('فتحت الصفحة، أرجّع الاتصال بالساعة المحفوظة');
   busy=true;setConn('busy','أرجّع الاتصال...');
-  try{await setup(k,12)}catch(e){log('ما رجع: '+(e.message||e.name||e));setConn('off','اضغط اتصال')}finally{busy=false}
+  try{await setup(k,12)}catch(e){skipKnown=true;setConn('off','اضغط اتصال واختر Ray')}finally{busy=false}
 })();
 </script>
 </body>
