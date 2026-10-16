@@ -491,20 +491,29 @@ function onFileData(e){
   if(xfer.parts.length%20===0){log('… استلمت '+xfer.bytes+' بايت');$('stxt').textContent='أسحب الحركة… '+fmtN(xfer.bytes)+' بايت'}
   xfer.poke();
 }
-function getActivityFile(){
+/* one request on the file channel; payload comes on 0004 until 0003 says 08 (done) */
+function fileReq(req,label){
   return new Promise(async(res,rej)=>{
     let t=null;
     xfer={seq:-1,parts:[],bytes:0,gotHead:false,done:false,last:false,
-      poke(){clearTimeout(t);t=setTimeout(()=>{ if(xfer.last||xfer.bytes) xfer.finish(); else xfer.fail(new Error('ما ردت الساعة على طلب الملف')) },8000)},
+      poke(){clearTimeout(t);t=setTimeout(()=>{ if(xfer.last||xfer.bytes) xfer.finish(); else xfer.fail(new Error('ما ردت الساعة على '+label)) },8000)},
       finish(){clearTimeout(t);const all=new Uint8Array(xfer.bytes);let o=0;for(const p of xfer.parts){all.set(p,o);o+=p.length}xfer=null;res(all)},
       fail(err){clearTimeout(t);xfer=null;rej(err)}};
     xfer.poke();
-    const req=new Uint8Array(11),dv=new DataView(req.buffer);
-    req[0]=1;dv.setUint16(1,0x0100,true);dv.setUint32(3,0,true);dv.setUint32(7,0xFFFF,true);
     log('→F '+hex(req));
     try{ if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req) }
     catch(e){xfer&&xfer.fail(e)}
   });
+}
+function getActivityFile(){
+  const req=new Uint8Array(11),dv=new DataView(req.buffer);
+  req[0]=1;dv.setUint16(1,0x0100,true);dv.setUint32(3,0,true);dv.setUint32(7,0xFFFF,true);
+  return fileReq(req,'طلب الملف');
+}
+/* same as the official app: 05 = how many activity files are waiting on the watch */
+async function listFiles(){
+  const p=await fileReq(new Uint8Array([5]),'طلب قائمة الملفات');
+  return {count:p.length?p[0]:0,total:p.length>=5?(p[1]|p[2]<<8|p[3]<<16|p[4]<<24)>>>0:0};
 }
 function parseFile(f){
   if(f.length<24) return null;
@@ -540,11 +549,10 @@ function parseFile(f){
 /* storage of parsed minutes on this phone */
 function loadMins(){try{return JSON.parse(localStorage.getItem('rayMins')||'{}')}catch(e){return {}}}
 function saveMins(m){try{localStorage.setItem('rayMins',JSON.stringify(m))}catch(e){log('ما قدرت أحفظ: '+e.message)}}
-/* the file is re-read whole on every pull, so its time range is replaced (never added twice) */
+/* each minute is saved under its own time, so reading a file twice just rewrites the same minutes.
+   (no more wiping a whole time range: a bad file used to erase hours of good data) */
 function merge(list){
   const m=loadMins(); if(!list.length) return m;
-  const a=list[0].t, b=list[list.length-1].t;
-  for(const k in m){const t=+k; if(t>=a&&t<=b) delete m[k]}
   for(const x of list){m[x.t]=[x.steps,x.points,x.varc]}
   saveMins(m); return m;
 }
@@ -556,20 +564,37 @@ function anchor(list){
   const sh=nowMin-last; for(const x of list) x.t+=sh; return sh;
 }
 
+/* like the official app: list the files, then for each one: read it, save it here, then erase it from the watch.
+   A file is only erased after it was read whole (length matches its header) and saved. */
 async function pull(){
   if(!fctl){log('خانات الملفات مو جاهزة، سوّ اتصال من جديد');return}
   $('bPull').disabled=true;
   $('stxt').textContent='أسحب الحركة…';
   try{
-    log('أطلب ملف الحركة...');
-    const f=await getActivityFile();
-    log('وصل الملف: '+f.length+' بايت');
-    try{let bin='';for(const x of f)bin+=String.fromCharCode(x);lsSet('rayRaw',btoa(bin));lsSet('rayRawAt',String(Date.now()))}catch(e){}
-    const p=parseFile(f);
-    if(!p){log('الملف فاضي أو قصير');return}
-    log(`الملف: format ${p.head.format}، يبدأ ${new Date(p.head.ts*1000).toLocaleString('en-GB')}، ${p.mins.length} دقيقة`);
-    const sh=anchor(p.mins); if(sh) log(`الملف كان سابق الوقت بـ ${-sh/60} دقيقة، رجّعته`);
-    merge(p.mins); lsSet('rayLastPull',Math.floor(Date.now()/1000)); render(); show($('nextBox'),'grid');
+    let n=-1;
+    try{const L=await listFiles();n=L.count;log(`في الساعة ${n} ملف (${fmtN(L.total)} بايت)`)}catch(e){log('ما قدرت أقرأ قائمة الملفات: '+e.message)}
+    const rounds=n<0?1:Math.min(n,40);
+    let got=0,minsAll=0;
+    for(let k=0;k<rounds;k++){
+      $('stxt').textContent=`أسحب الحركة… ملف ${k+1} من ${rounds}`;
+      const f=await getActivityFile();
+      log('وصل الملف: '+f.length+' بايت');
+      try{let bin='';for(const x of f)bin+=String.fromCharCode(x);lsSet('rayRaw',btoa(bin));lsSet('rayRawAt',String(Date.now()))}catch(e){}
+      const p=parseFile(f);
+      if(!p){log('الملف فاضي أو قصير، وقفت هنا');break}
+      log(`الملف: format ${p.head.format}، يبدأ ${new Date(p.head.ts*1000).toLocaleString('en-GB')}، ${p.mins.length} دقيقة`);
+      const sh=anchor(p.mins); if(sh) log(`الملف كان سابق الوقت بـ ${-sh/60} دقيقة، رجّعته`);
+      if(sh<-30*60){log('وقت الملف غلط بأكثر من نص ساعة، ما حفظته ولا مسحته');break}
+      merge(p.mins); got++; minsAll+=p.mins.length;
+      if(n<0) break;                                   // no list → old behaviour, don't erase
+      if(f.length!==p.head.length){log('الملف وصل ناقص، ما مسحته من الساعة');break}
+      const req=new Uint8Array([3,0x00,0x01]); log('→F '+hex(req)+' (مسح بعد الحفظ)');
+      if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req);
+      await sleep(1200);
+    }
+    if(got){log(`خلصت: ${got} ملف، ${fmtN(minsAll)} دقيقة`);lsSet('rayLastPull',Math.floor(Date.now()/1000))}
+    else if(n===0) log('ما فيه ملفات جديدة في الساعة');
+    render();
   }catch(e){log('خطأ: '+e.message)}
   finally{const on=!!(dev&&dev.gatt.connected);$('bPull').disabled=!on;if(on)$('stxt').textContent='متصل: '+(dev.name||'Ray')}
 }
