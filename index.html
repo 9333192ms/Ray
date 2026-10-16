@@ -201,7 +201,7 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
     <div class="statrow">
       <div class="stat"><span class="k">المسافة</span><span class="v" id="tKm">—</span></div>
       <div class="stat"><span class="k">السرعة</span><span class="v" id="tPace">—</span></div>
-      <div class="stat"><span class="k">سعرات الحركة</span><span class="v" id="tCal">—</span></div>
+      <div class="stat"><span class="k">السعرات</span><span class="v" id="tCal">—</span></div>
     </div>
     <div style="display:grid;gap:4px">
       <div id="tHours" class="hours"></div>
@@ -274,6 +274,16 @@ details .body{padding:0 14px 14px;display:grid;gap:10px}
         <input id="height" placeholder="مثال: 175" class="num" type="number" inputmode="numeric" min="120" max="220" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
       </div>
       <div class="set">
+        <label for="birth">سنة ميلادك (للسعرات، مثل التطبيق الأصلي)</label>
+        <input id="birth" class="num" type="number" inputmode="numeric" min="1930" max="2020" placeholder="مثال: 1990" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+      </div>
+      <div class="set">
+        <label for="gender">الجنس</label>
+        <select id="gender" style="font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg)">
+          <option value="0">ذكر</option><option value="1">أنثى</option>
+        </select>
+      </div>
+      <div class="set">
         <label for="weight">وزنك (كجم) عشان السعرات</label>
         <input id="weight" class="num" type="number" inputmode="numeric" min="30" max="250" placeholder="مثال: 80" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
       </div>
@@ -328,10 +338,12 @@ function log(s){const p=$('log');const t=new Date().toLocaleTimeString('en-GB');
 
 /* ---------- settings ---------- */
 const S={get goal(){return +lsGet('rayGoal',8000)||8000},get height(){return +lsGet('rayHeight',0)||0},get stride(){return S.height?S.height*0.415:75},
-  get weight(){return +lsGet('rayWeight',0)||0},get sens(){return +lsGet('raySens',1)||1},get auto(){return lsGet('rayAuto','1')==='1'}};
-$('goal').value=S.goal;if(S.height)$('height').value=S.height;if(S.weight)$('weight').value=S.weight;$('autoPull').checked=S.auto;
+  get weight(){return +lsGet('rayWeight',0)||0},get birth(){return +lsGet('rayBirth',0)||0},get gender(){return +lsGet('rayGender',0)||0},get sens(){return +lsGet('raySens',1)||1},get auto(){return lsGet('rayAuto','1')==='1'}};
+$('goal').value=S.goal;if(S.height)$('height').value=S.height;if(S.weight)$('weight').value=S.weight;if(S.birth)$('birth').value=S.birth;$('gender').value=String(S.gender);$('autoPull').checked=S.auto;
 $('goal').onchange=e=>{const v=Math.max(1000,+e.target.value||8000);lsSet('rayGoal',v);e.target.value=v;render()};
 $('height').onchange=e=>{const v=+e.target.value;lsSet('rayHeight',v>=120&&v<=220?v:0);render()};
+$('birth').onchange=e=>{const v=+e.target.value;lsSet('rayBirth',v>=1920&&v<=2020?v:0);render()};
+$('gender').onchange=e=>{lsSet('rayGender',e.target.value);render()};
 $('weight').onchange=e=>{const v=+e.target.value;lsSet('rayWeight',v>=30&&v<=250?v:0);render()};
 $('autoPull').onchange=e=>lsSet('rayAuto',e.target.checked?'1':'0');
 
@@ -799,7 +811,7 @@ const misfitSleep = (() => {
 /* ---------- sleep ----------
    Same method as the official Misfit app (Shine/Ray file format 19):
    minutes with tiny-movement variance <= 50 are sleep candidates, smoothed, deep = almost no restless
-   minutes nearby. Unlike the app, sleep that starts at any hour counts (the owner sleeps late sometimes). */
+   minutes nearby; it only counts if it starts between 19:00 and 05:00 (the app's own rule). */
 function nightFor(m,dayKey){
   const [y,mo,d]=dayKey.split('-').map(Number);
   const start=new Date(y,mo-1,d-1,12).getTime()/1000, end=new Date(y,mo-1,d+1,0).getTime()/1000, dayStart=new Date(y,mo-1,d,0).getTime()/1000;
@@ -811,9 +823,12 @@ function nightFor(m,dayKey){
     if(R.v.length<150) continue;
     for(const x of misfitSleep.detect(R.v,R.s)){
       const from=R.t0+x.start*60, to=R.t0+(x.end+1)*60;
-      // the original app only kept sleep that started 19:00-05:00; here any time counts.
-      // a sleep belongs to the day it ends on; the longest one is shown
-      if(to<=dayStart||to>end) continue;
+      // the app's rule: an automatic sleep must start between 19:00 and 05:00 local time
+      const tz=-new Date(from*1000).getTimezoneOffset()*60;
+      let h=Math.fround(Math.fround(Math.trunc(tz/3600))+Math.fround((from%86400)/Math.fround(3600))); if(h>=24)h-=24; if(h<0)h+=24;
+      if(!(h>=19||h<=5)) continue;
+      // like the app, a sleep belongs to the day it ends on
+      if(to<dayStart||to>end) continue;
       if(!best||x.sleep>best.x.sleep) best={x,from,to};
     }
   }
@@ -852,20 +867,45 @@ function lastSyncText(){
   const mins=Math.round((Date.now()/1000-lp)/60);
   return 'آخر سحب: '+(mins<1?'الحين':mins<60?`قبل ${mins} د`:mins<24*60?`قبل ${Math.round(mins/60)} س`:`${DAYS[new Date(lp*1000).getDay()]} ${hm(lp)}`);
 }
-/* per-minute estimates, by cadence (steps in that minute):
-   distance: stride from height (×0.415); running cadence (≥140) gets a 25% longer stride
-   calories: walking/running METs by cadence, minus resting, × weight */
-const MET=c=>c<40?2.0:c<80?2.8:c<100?3.5:c<120?4.3:c<140?5.5:c<160?8.0:9.8;
+/* Day totals the same way as the official Misfit app:
+   - steps and points: sum of every minute (the app's activity + gap sessions cover every minute)
+   - distance: per minute, stride = height x factor that grows with steps-per-minute
+     (0.33 up to 80 spm, then 0.33..0.45 at 140, 0.45..0.841 at 186, 0.841..0.91 at 255), in miles, then km
+   - calories: the app's AlgorithmUtil formula with its default factors (alpha .15, beta 1.3, gamma .5, delta .925)
+     on the day's points and the Mifflin BMR from weight, height, age and gender */
 const ACT_CAD=60, HOUR_STEPS=250, ACT_GOAL=30, HRS_GOAL=9;
+function misfitMinMiles(s){   // calculateNormalizedOneMinDistance, miles per inch of height
+  const f=Math.fround, d=f(63360);
+  if(s<=80) return f(s*f(5.2083337322983425e-06));
+  if(s<141) return f(s*f(f(f(s-80)*f(0.0020000000949949026)+f(0.33000001311302185))/d));
+  if(s<187) return f(s*f(f(f(s-140)*f(0.008500000461935997)+f(0.44999998807907104))/d));
+  if(s-187<69) return f(s*f(f(f(s-186)*f(0.0010000000474974513)+f(0.8410000205039978))/d));
+  return f(s*f(1.4362373804033268e-05));
+}
+function misfitBMR(){   // AlgorithmUtil: weight*10 + height(m)*625 - age*5 + (female ? -161 : 5)
+  if(!S.weight||!S.height||!S.birth) return 0;
+  const age=new Date().getFullYear()-S.birth;
+  const hIn=S.height/2.54, hM=hIn*0.02539999969303608;
+  return (S.weight*10+hM*625)-age*5+(S.gender===1?-161:5);
+}
+function misfitCalories(points,hours){
+  const bmr=misfitBMR(); if(!bmr) return null;
+  const a=Math.fround(0.15)*points*(S.weight/60)+(Math.fround(1.3)*hours*bmr)/24;
+  return Math.min(a,Math.fround(0.5)*a+Math.fround(0.925)*bmr);
+}
 function dayTotals(m){
-  const by={}, st=S.stride/100000, W=S.weight;
+  const by={};
   for(const k in m){const t=+k, r=m[k], c=r[0], dk=dkey(t);
-    const o=by[dk]||(by[dk]={steps:0,act:0,hours:new Array(24).fill(0),mins:0,km:0,kcal:0,walkMin:0});
-    o.steps+=c;o.mins++;if(c>=ACT_CAD)o.act++;if(c>0)o.walkMin++;o.hours[new Date(t*1000).getHours()]+=c;
-    o.km+=c*st*(c>=140?1.25:1);
-    if(c>0&&W)o.kcal+=W*(MET(c)-1)*3.5/200;
+    const o=by[dk]||(by[dk]={steps:0,pts:0,act:0,hours:new Array(24).fill(0),mins:0,mi:0,km:0,kcal:null,walkMin:0});
+    o.steps+=c;o.pts+=r[1];o.mins++;if(c>=ACT_CAD)o.act++;if(c>0)o.walkMin++;o.hours[new Date(t*1000).getHours()]+=c;
+    o.mi+=misfitMinMiles(c);
   }
-  for(const k in by)by[k].hrs=by[k].hours.filter(v=>v>=HOUR_STEPS).length;
+  const today=dkey(Date.now()/1000), d0=new Date();d0.setHours(0,0,0,0);
+  for(const k in by){const o=by[k];
+    o.hrs=o.hours.filter(v=>v>=HOUR_STEPS).length;
+    o.km=S.height?o.mi*(S.height/2.54)*1.609344:0;
+    o.kcal=misfitCalories(o.pts,k===today?(Date.now()-d0.getTime())/3600000:24);
+  }
   return by;
 }
 function render(){
@@ -885,9 +925,9 @@ function render(){
   $('tSteps').textContent=has?fmtN(steps):'—'; $('tGoal').textContent=' / '+fmtN(goal);
   $('tAct').textContent=has?(T?T.act:0):'—'; $('tActG').textContent=` / ${ACT_GOAL} د`;
   $('tHrs').textContent=has?(T?T.hrs:0):'—'; $('tHrsG').textContent=` / ${HRS_GOAL}`;
-  $('tKm').innerHTML=has?`${(T?T.km:0).toFixed(2)}<small> كم</small>`:'—';
+  $('tKm').innerHTML=!has?'—':S.height?`${(T?T.km:0).toFixed(2)}<small> كم</small>`:'<small>حط طولك في الإعدادات</small>';
   $('tPace').innerHTML=has&&T&&T.walkMin?`${fmtN(T.steps/T.walkMin)}<small> خطوة/د</small>`:'—';
-  $('tCal').innerHTML=!has?'—':S.weight?`${fmtN(T?T.kcal:0)}<small> س.ح</small>`:'<small>حط وزنك في الإعدادات</small>';
+  $('tCal').innerHTML=!has?'—':(T&&T.kcal!==null)?`${fmtN(T.kcal)}<small> س.ح</small>`:misfitBMR()?'0':'<small>حط طولك ووزنك وسنة ميلادك</small>';
   showBat(lsGet('rayBat',null));
   const last=has?Math.max(...keys.map(Number)):0;
   const closed=[f>=1,(T?T.act:0)>=ACT_GOAL,(T?T.hrs:0)>=HRS_GOAL].filter(Boolean).length;
@@ -908,7 +948,7 @@ function render(){
       <p class="hint">نفس طريقة حساب تطبيق Misfit الأصلي. تقدير من حركة اليد، مو قياس طبي.</p>`;
   }else{
     $('nRange').textContent='';
-    $('nightBody').innerHTML=`<p class="hint">${keys.length?'ما لقيت نوم البارحة في البيانات. تأكد إنك لابس الساعة وانت نايم، واسحب الحركة بعد ما تقوم.':'ما فيه بيانات نوم لين الحين. البس الساعة وانت نايم، والصبح اضغط اتصال.'}</p>`;
+    $('nightBody').innerHTML=`<p class="hint">${keys.length?'ما لقيت نوم البارحة. التطبيق الأصلي يحسب النوم بس إذا بدأ بين 7 المغرب و5 الفجر، وكنت لابس الساعة.':'ما فيه بيانات نوم لين الحين. البس الساعة وانت نايم، والصبح اضغط اتصال.'}</p>`;
   }
 
   // week
@@ -956,7 +996,7 @@ function render(){
 /* ---------- backup ---------- */
 function toast(s){$('toast').textContent=s}
 $('bExport').onclick=async()=>{
-  const data={app:'ray-lab',v:5,saved:new Date().toISOString(),tzOffset:-new Date().getTimezoneOffset(),points:$('vPts').textContent,raw:lsGet('rayRaw',''),rawAt:+lsGet('rayRawAt',0),mins:loadMins(),goal:S.goal,height:S.height,weight:S.weight};
+  const data={app:'ray-lab',v:6,birth:S.birth,gender:S.gender,saved:new Date().toISOString(),tzOffset:-new Date().getTimezoneOffset(),points:$('vPts').textContent,raw:lsGet('rayRaw',''),rawAt:+lsGet('rayRawAt',0),mins:loadMins(),goal:S.goal,height:S.height,weight:S.weight};
   const name=`ray-${dkey(Date.now()/1000)}.json`;
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   try{
@@ -985,7 +1025,7 @@ $('fImport').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d.mins)throw new Error('مو ملف الراي');
     const m=loadMins();let n=0;for(const k in d.mins){if(!m[k])n++;m[k]=d.mins[k]}saveMins(m);
-    if(d.goal)lsSet('rayGoal',d.goal);if(d.height)lsSet('rayHeight',d.height);if(d.weight)lsSet('rayWeight',d.weight);
+    if(d.goal)lsSet('rayGoal',d.goal);if(d.height)lsSet('rayHeight',d.height);if(d.weight)lsSet('rayWeight',d.weight);if(d.birth)lsSet('rayBirth',d.birth);if(d.gender!==undefined)lsSet('rayGender',d.gender);
     $('goal').value=S.goal;render();toast(`رجعت ${fmtN(n)} دقيقة جديدة`)}
   catch(err){toast('ما قدرت أقرأ الملف: '+err.message)}
   e.target.value='';
