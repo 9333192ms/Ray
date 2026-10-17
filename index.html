@@ -811,7 +811,7 @@ const misfitSleep = (() => {
 /* ---------- sleep ----------
    Same method as the official Misfit app (Shine/Ray file format 19):
    minutes with tiny-movement variance <= 50 are sleep candidates, smoothed, deep = almost no restless
-   minutes nearby; it only counts if it starts between 19:00 and 05:00 (the app's own rule). */
+   minutes nearby. Unlike the app, it counts at any hour (day sleep too). */
 function nightFor(m,dayKey){
   const [y,mo,d]=dayKey.split('-').map(Number);
   const start=new Date(y,mo-1,d-1,12).getTime()/1000, end=new Date(y,mo-1,d+1,0).getTime()/1000, dayStart=new Date(y,mo-1,d,0).getTime()/1000;
@@ -823,10 +823,6 @@ function nightFor(m,dayKey){
     if(R.v.length<150) continue;
     for(const x of misfitSleep.detect(R.v,R.s)){
       const from=R.t0+x.start*60, to=R.t0+(x.end+1)*60;
-      // the app's rule: an automatic sleep must start between 19:00 and 05:00 local time
-      const tz=-new Date(from*1000).getTimezoneOffset()*60;
-      let h=Math.fround(Math.fround(Math.trunc(tz/3600))+Math.fround((from%86400)/Math.fround(3600))); if(h>=24)h-=24; if(h<0)h+=24;
-      if(!(h>=19||h<=5)) continue;
       // like the app, a sleep belongs to the day it ends on
       if(to<dayStart||to>end) continue;
       if(!best||x.sleep>best.x.sleep) best={x,from,to};
@@ -948,7 +944,7 @@ function render(){
       <p class="hint">نفس طريقة حساب تطبيق Misfit الأصلي. تقدير من حركة اليد، مو قياس طبي.</p>`;
   }else{
     $('nRange').textContent='';
-    $('nightBody').innerHTML=`<p class="hint">${keys.length?'ما لقيت نوم البارحة. التطبيق الأصلي يحسب النوم بس إذا بدأ بين 7 المغرب و5 الفجر، وكنت لابس الساعة.':'ما فيه بيانات نوم لين الحين. البس الساعة وانت نايم، والصبح اضغط اتصال.'}</p>`;
+    $('nightBody').innerHTML=`<p class="hint">${keys.length?'ما لقيت نوم. النوم ينحسب إذا كنت لابس الساعة ونمت ساعتين ونص أو أكثر بدون حركة كثير.':'ما فيه بيانات نوم لين الحين. البس الساعة وانت نايم، والصبح اضغط اتصال.'}</p>`;
   }
 
   // week
