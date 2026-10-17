@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>مختبر الراي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#f3f5f4; --panel:#ffffff; --fg:#14201c; --muted:#5d6b66; --line:#d9e0dd;
+  --accent:#0f7a5c; --accent-fg:#ffffff; --warn:#b4541a; --ok:#0f7a5c; --code-bg:#e9eeec; --track:#e2e8e5;
+  --deep:#1f4f8f; --light:#7fa8d9; --wake:#e3b25b;
+  --r1:#0f9d6e; --r1b:#0b6b4b; --r1t:#d5ece3; --r2:#e07b00; --r2t:#f6e2c8; --r3:#2a7bd6; --r3t:#d6e5f6;
+  --f-body:"IBM Plex Sans Arabic",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --r1:#3fe0a4; --r1b:#b6ffe0; --r1t:#163a2e; --r2:#ffa23a; --r2t:#3b2a14; --r3:#5aa9ff; --r3t:#172c44;
+  --bg:#0e1513; --panel:#16201d; --fg:#e4ece9; --muted:#8fa19a; --line:#26332f; --track:#22302b;
+  --accent:#3fc79a; --accent-fg:#06120e; --warn:#f0a36a; --ok:#3fc79a; --code-bg:#0b110f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --r1:#3fe0a4; --r1b:#b6ffe0; --r1t:#163a2e; --r2:#ffa23a; --r2t:#3b2a14; --r3:#5aa9ff; --r3t:#172c44;
+  --bg:#0e1513; --panel:#16201d; --fg:#e4ece9; --muted:#8fa19a; --line:#26332f; --track:#22302b;
+  --accent:#3fc79a; --accent-fg:#06120e; --warn:#f0a36a; --ok:#3fc79a; --code-bg:#0b110f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:18px 48px;display:grid;gap:16px}
+h1{margin:0;font-size:1.5rem;font-weight:700}
+h2{margin:0;font-size:1.05rem}
+.sub{margin:0;color:var(--muted);font-size:.88rem}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:12px}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.status.on .dot{background:var(--ok)}
+.status.busy .dot{background:var(--wake)}
+.status .txt{flex:1;min-width:0}
+.serial{font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:11px 14px;cursor:pointer;min-height:46px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button.danger{background:var(--warn);color:var(--panel);border-color:var(--warn)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.err{padding:12px 14px;border-radius:12px;border:1px solid var(--warn);color:var(--warn);font-size:.9rem}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+.warnt{color:var(--warn);font-weight:600}
+
+/* today */
+.today{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.ring{position:relative;width:140px;height:140px}
+.rl{display:grid;gap:10px;min-width:0}
+.ri{display:grid;gap:0}
+.ri .k{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ri .k b{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ri .v{font-family:var(--f-mono);font-size:1.35rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.ri .v small{font-size:.8rem;color:var(--muted);font-weight:400}
+.hyp{width:100%;height:84px;display:block;border-radius:6px;background:var(--code-bg)}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .in{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.15}
+.ring .big{font-family:var(--f-mono);font-size:1.6rem;font-weight:600;font-variant-numeric:tabular-nums}
+.ring .of{font-size:.75rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{display:grid;gap:0}
+.stat .k{font-size:.75rem;color:var(--muted)}
+.stat .v{font-family:var(--f-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .v small{font-family:var(--f-body);font-size:.75rem;font-weight:400;color:var(--muted)}
+@media (max-width:360px){.today{grid-template-columns:1fr;justify-items:center}}
+
+/* last night */
+.night .big{font-family:var(--f-mono);font-size:1.6rem;font-weight:600}
+.nighthead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sleepbar{display:flex;height:22px;border-radius:6px;overflow:hidden;direction:ltr;background:var(--code-bg)}
+.sleepbar span{display:block;height:100%}
+.s-deep{background:var(--deep)} .s-light{background:var(--light)} .s-wake{background:var(--wake)}
+.saxis{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);direction:ltr}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px;vertical-align:middle}
+.legend .v{font-family:var(--f-mono);color:var(--fg)}
+
+/* week */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:140px;position:relative}
+.week .col{display:grid;grid-template-rows:1fr auto;height:100%;gap:4px;text-align:center}
+.week .bar{align-self:end;background:var(--accent);opacity:.55;border-radius:4px 4px 0 0;min-height:2px}
+.week .col.hit .bar{opacity:1}
+.week .col.now .lbl{color:var(--fg);font-weight:600}
+.week .lbl{font-size:.7rem;color:var(--muted)}
+.week .goal{position:absolute;inset-inline:0;border-top:1px dashed var(--muted);pointer-events:none}
+.weeksum{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);flex-wrap:wrap;gap:6px}
+
+/* days list */
+.day{display:grid;gap:8px;padding-block:10px;border-top:1px solid var(--line)}
+.day:first-of-type{border-top:0}
+.dayh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:600}
+.dayh .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.bars{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:48px;direction:ltr}
+.bars i{display:block;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px;opacity:.85}
+.axis{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);direction:ltr}
+.mini{font-size:.82rem;color:var(--muted)}
+
+/* readings + actions */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.read{display:grid;gap:0;min-width:0}
+.read .k{font-size:.75rem;color:var(--muted)}
+.read .v{font-family:var(--f-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.read .n{font-size:.72rem;color:var(--muted)}
+.read .n.warn{color:var(--warn);font-weight:600}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions .wide{grid-column:1/-1}
+.confirm{display:grid;gap:8px;font-size:.86rem;color:var(--muted)}
+.confirm p{margin:0}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row input{flex:1;min-width:0;font-family:var(--f-mono);font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr}
+
+details{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+details>summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"＋";float:left;color:var(--muted)}
+details[open]>summary::after{content:"－"}
+details .body{padding:0 14px 14px;display:grid;gap:10px}
+.set{display:grid;gap:4px}
+.set label{font-size:.85rem;color:var(--muted)}
+.log pre{margin:0;background:var(--code-bg);border-radius:10px;padding:10px 12px;font-family:var(--f-mono);font-size:.75rem;line-height:1.5;max-height:260px;overflow:auto;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-all}
+.toast{font-size:.85rem;color:var(--muted)}
+.hello{display:flex;justify-content:space-between;align-items:end;gap:8px;flex-wrap:wrap}
+.hello .date{font-size:.85rem;color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--code-bg);font-size:.8rem;color:var(--muted)}
+.chip b{font-family:var(--f-mono);color:var(--fg);font-weight:600}
+.batt{width:22px;height:11px;border:1.5px solid var(--muted);border-radius:3px;position:relative;display:inline-block}
+.batt::after{content:"";position:absolute;inset-inline-end:-4px;top:2.5px;width:2px;height:4px;background:var(--muted);border-radius:1px}
+.batt i{position:absolute;inset:1px;inset-inline-start:auto;background:var(--ok);border-radius:1px}
+.batt.low i{background:var(--warn)}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.statrow .stat{text-align:center}
+.hours{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:40px;direction:ltr}
+.hours i{display:block;background:var(--r1);border-radius:2px 2px 0 0;min-height:2px;opacity:.75}
+.hours i.now{opacity:1;outline:1px solid var(--fg);outline-offset:1px}
+.hours i.empty{background:var(--track);opacity:1}
+.msg{font-weight:600}
+.week .col.none .bar{background:transparent;border:1.5px dashed var(--line);min-height:28px;opacity:1}
+.week .val{font-family:var(--f-mono);font-size:.65rem;color:var(--muted);line-height:1}
+.week .col{grid-template-rows:1fr auto auto}
+.recs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rec{background:var(--code-bg);border-radius:10px;padding:10px;display:grid;gap:0;text-align:center}
+.rec .k{font-size:.72rem;color:var(--muted)}
+.rec .v{font-family:var(--f-mono);font-size:1.1rem;font-weight:600}
+.rec .n{font-size:.7rem;color:var(--muted)}
+@keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+.ring.done{animation:pop .6s ease-out}
+@media (prefers-reduced-motion:reduce){.ring.done{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl">
+  <header class="hello">
+    <div><h1 id="hi">مختبر الراي</h1><p class="sub">ساعة Misfit Ray بدون تطبيق Misfit</p></div>
+    <span id="today" class="date"></span>
+  </header>
+
+  <div id="nobt" class="err" style="display:none">هذا المتصفح ما يقدر يوصل للبلوتوث. افتح الصفحة من <b>Bluefy</b> في الآيفون، وتأكد إن البلوتوث شغال.</div>
+
+  <div class="card">
+    <div id="status" class="status">
+      <span class="dot"></span>
+      <div class="txt"><div id="stxt">غير متصل</div><div id="serial" class="serial"></div></div>
+      <button id="bConnect" class="primary">اتصال</button>
+    </div>
+    <div class="chips">
+      <span class="chip"><span id="battIcon" class="batt"><i style="width:0"></i></span><b id="vBat">—</b></span>
+      <span class="chip">نقاط Misfit <b id="vPts">—</b></span>
+      <span class="chip" id="lastSync">ما سحبنا لين الحين</span>
+    </div>
+    <button id="bRefresh" class="primary" style="display:none">تحديث الحركة من الساعة</button>
+  </div>
+
+  <!-- اليوم -->
+  <section class="card" aria-label="اليوم">
+    <div class="today">
+      <div class="ring">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--r1t)" stroke-width="12"/>
+          <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="var(--r1)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle id="ringArc2" cx="60" cy="60" r="52" fill="none" stroke="var(--r1b)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle cx="60" cy="60" r="38" fill="none" stroke="var(--r2t)" stroke-width="12"/>
+          <circle id="ringB" cx="60" cy="60" r="38" fill="none" stroke="var(--r2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <circle cx="60" cy="60" r="24" fill="none" stroke="var(--r3t)" stroke-width="12"/>
+          <circle id="ringC" cx="60" cy="60" r="24" fill="none" stroke="var(--r3)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+        </svg>
+      </div>
+      <div class="rl">
+        <div class="ri"><span class="k"><b style="background:var(--r1)"></b>الخطوات</span><span class="v"><span id="tSteps">—</span><small id="tGoal"></small></span></div>
+        <div class="ri"><span class="k"><b style="background:var(--r2)"></b>دقايق نشاط</span><span class="v"><span id="tAct">—</span><small id="tActG"></small></span></div>
+        <div class="ri"><span class="k"><b style="background:var(--r3)"></b>ساعات تحركت فيها</span><span class="v"><span id="tHrs">—</span><small id="tHrsG"></small></span></div>
+      </div>
+    </div>
+    <div style="display:grid;gap:2px">
+      <span id="tMsg" class="msg">اليوم</span>
+      <p id="tNote" class="hint"></p>
+    </div>
+    <div class="statrow">
+      <div class="stat"><span class="k">المسافة</span><span class="v" id="tKm">—</span></div>
+      <div class="stat"><span class="k">السرعة</span><span class="v" id="tPace">—</span></div>
+      <div class="stat"><span class="k">السعرات</span><span class="v" id="tCal">—</span></div>
+    </div>
+    <div style="display:grid;gap:4px">
+      <div id="tHours" class="hours"></div>
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+    </div>
+  </section>
+
+  <!-- النوم -->
+  <section class="card night" aria-label="نوم البارحة">
+    <div class="nighthead">
+      <h2>نوم البارحة</h2>
+      <span id="nRange" class="mini num"></span>
+    </div>
+    <div id="nightBody"><p class="hint">ما فيه بيانات نوم لين الحين. البس الساعة وانت نايم، والصبح اضغط اتصال.</p></div>
+  </section>
+
+  <!-- الأسبوع -->
+  <section class="card" aria-label="آخر ٧ أيام">
+    <h2>آخر ٧ أيام <span class="mini">(خطوات)</span></h2>
+    <div id="week" class="week"></div>
+    <div id="weekSum" class="weeksum"></div>
+  </section>
+
+  <section class="card" aria-label="أرقامك">
+    <h2>أرقامك</h2>
+    <div id="recs" class="recs"></div>
+  </section>
+
+  <!-- كل الأيام -->
+  <details id="allDays">
+    <summary>كل الأيام بالتفصيل <span id="actInfo" class="mini"></span></summary>
+    <div class="body" id="days"></div>
+  </details>
+
+  <!-- الساعة -->
+  <details>
+    <summary>الساعة</summary>
+    <div class="body">
+      <div class="grid3">
+        <div class="read"><span class="k">وقت الساعة</span><span class="v" id="vTime">—</span><span class="n" id="nTime">بتوقيتها</span></div>
+      </div>
+      <div class="actions">
+        <button id="bPull" disabled class="primary wide">سحب الحركة من الساعة</button>
+        <button id="bRead" disabled>قراءة البطارية والوقت</button>
+        <button id="bSync" disabled>ضبط الوقت من الجوال</button>
+        <button id="bBlink" disabled class="wide">ومّض الساعة (عشان تعرفها)</button>
+      </div>
+      <div id="nextBox" class="confirm" style="display:none">
+        <p>الساعة تعطي ملف واحد كل مرة. عشان ناخذ اللي بعده لازم نمسح هذا من الساعة. البيانات انحفظت في الصفحة.</p>
+        <div class="row"><button id="bNext" disabled>امسح هذا الملف وهات اللي بعده</button></div>
+        <div id="nextConfirm" class="row" style="display:none">
+          <button id="bNextYes" class="danger">أكيد، امسح</button>
+          <button id="bNextNo">إلغاء</button>
+        </div>
+      </div>
+      <button id="bForget">انسَ الساعة المحفوظة</button>
+    </div>
+  </details>
+
+  <!-- الإعدادات -->
+  <details>
+    <summary>الإعدادات والنسخ الاحتياطي</summary>
+    <div class="body">
+      <div class="set">
+        <label for="goal">هدف الخطوات اليومي</label>
+        <input id="goal" class="num" type="number" inputmode="numeric" min="1000" step="500" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+      </div>
+      <div class="set">
+        <label for="height">طولك (سم) عشان المسافة تطلع أدق</label>
+        <input id="height" placeholder="مثال: 175" class="num" type="number" inputmode="numeric" min="120" max="220" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+      </div>
+      <div class="set">
+        <label for="birth">سنة ميلادك (للسعرات، مثل التطبيق الأصلي)</label>
+        <input id="birth" class="num" type="number" inputmode="numeric" min="1930" max="2020" placeholder="مثال: 1990" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+      </div>
+      <div class="set">
+        <label for="gender">الجنس</label>
+        <select id="gender" style="font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg)">
+          <option value="0">ذكر</option><option value="1">أنثى</option>
+        </select>
+      </div>
+      <div class="set">
+        <label for="weight">وزنك (كجم) عشان السعرات</label>
+        <input id="weight" class="num" type="number" inputmode="numeric" min="30" max="250" placeholder="مثال: 80" style="font-size:1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--code-bg);color:var(--fg);direction:ltr">
+      </div>
+      <label class="row" style="align-items:center;font-size:.9rem"><input id="autoPull" type="checkbox" style="flex:none;width:20px;height:20px"> اسحب الحركة لحاله أول ما يتصل</label>
+      <div class="actions">
+        <button id="bExport">حفظ نسخة احتياطية</button>
+        <button id="bImport">استرجاع نسخة</button>
+      </div>
+      <button id="bCopyRaw">نسخ ملف الساعة الخام (للمهندس)</button>
+      <textarea id="rawBox" readonly style="display:none;width:100%;height:120px;font-family:var(--f-mono);font-size:.7rem;direction:ltr;background:var(--code-bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px"></textarea>
+      <input id="fImport" type="file" accept=".json,application/json" style="display:none">
+      <p id="toast" class="toast"></p>
+    </div>
+  </details>
+
+  <!-- للتجارب -->
+  <details class="log">
+    <summary>السجل والأوامر اليدوية</summary>
+    <div class="body">
+      <div class="row">
+        <input id="hex" placeholder="مثال: 0106" autocomplete="off" spellcheck="false">
+        <button id="bSend" disabled>إرسال</button>
+      </div>
+      <p class="hint">يُكتب في خانة 3DDA0002.</p>
+      <pre id="log">جاهز.</pre>
+    </div>
+  </details>
+</div>
+
+<script>
+const SVC='3dda0001-957f-7d4a-34a6-74696673696d';
+const CTRL='3dda0002-957f-7d4a-34a6-74696673696d';
+const FCTL='3dda0003-957f-7d4a-34a6-74696673696d';
+const FDAT='3dda0004-957f-7d4a-34a6-74696673696d';
+const REQ_OPTS={filters:[{services:[SVC]},{namePrefix:'Shine'},{namePrefix:'Ray'}],optionalServices:[SVC,'battery_service','device_information']};
+let dev=null, ctrl=null, battChar=null, fctl=null, fdat=null, xfer=null, waiters=[], busy=false, skipKnown=false;
+const $=id=>document.getElementById(id);
+const show=(el,d)=>{el.style.display=d||''};
+const hide=el=>{el.style.display='none'};
+const hex=b=>Array.from(b,x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');
+const pad=n=>String(n).padStart(2,'0');
+const fmtN=n=>Math.round(n).toLocaleString('en');
+const fmtH=m=>`${Math.floor(m/60)}س ${pad(m%60)}د`;
+const hm=t=>{const d=new Date(t*1000);return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const dkey=t=>{const d=new Date(t*1000);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const DAYS=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function log(s){const p=$('log');const t=new Date().toLocaleTimeString('en-GB');p.textContent=`${t}  ${s}\n`+p.textContent}
+
+/* ---------- settings ---------- */
+const S={get goal(){return +lsGet('rayGoal',8000)||8000},get height(){return +lsGet('rayHeight',0)||0},get stride(){return S.height?S.height*0.415:75},
+  get weight(){return +lsGet('rayWeight',0)||0},get birth(){return +lsGet('rayBirth',0)||0},get gender(){return +lsGet('rayGender',0)||0},get sens(){return +lsGet('raySens',1)||1},get auto(){return lsGet('rayAuto','1')==='1'}};
+$('goal').value=S.goal;if(S.height)$('height').value=S.height;if(S.weight)$('weight').value=S.weight;if(S.birth)$('birth').value=S.birth;$('gender').value=String(S.gender);$('autoPull').checked=S.auto;
+$('goal').onchange=e=>{const v=Math.max(1000,+e.target.value||8000);lsSet('rayGoal',v);e.target.value=v;render()};
+$('height').onchange=e=>{const v=+e.target.value;lsSet('rayHeight',v>=120&&v<=220?v:0);render()};
+$('birth').onchange=e=>{const v=+e.target.value;lsSet('rayBirth',v>=1920&&v<=2020?v:0);render()};
+$('gender').onchange=e=>{lsSet('rayGender',e.target.value);render()};
+$('weight').onchange=e=>{const v=+e.target.value;lsSet('rayWeight',v>=30&&v<=250?v:0);render()};
+$('autoPull').onchange=e=>lsSet('rayAuto',e.target.checked?'1':'0');
+
+/* ---------- connection ---------- */
+function setConn(state,txt){
+  const st=$('status');st.classList.toggle('on',state==='on');st.classList.toggle('busy',state==='busy');
+  $('stxt').textContent=txt;
+  const on=state==='on';
+  ['bRead','bSync','bBlink','bSend','bPull','bNext','bRefresh'].forEach(i=>$(i).disabled=!on);
+  $('bRefresh').style.display=on?'':'none';
+  $('bConnect').textContent=on?'قطع':'اتصال';
+  $('bConnect').disabled=state==='busy';
+}
+if(!navigator.bluetooth){show($('nobt'));$('bConnect').disabled=true}
+
+function onNotify(e){
+  const b=new Uint8Array(e.target.value.buffer);
+  log('← '+hex(b));
+  const i=waiters.findIndex(w=>b[0]===3&&b[1]===w.param);
+  if(i>=0){const w=waiters.splice(i,1)[0];clearTimeout(w.t);w.res(b)}
+}
+async function write(bytes){
+  log('→ '+hex(bytes));
+  const d=new Uint8Array(bytes);
+  if(ctrl.writeValueWithResponse) await ctrl.writeValueWithResponse(d); else await ctrl.writeValue(d);
+}
+function ask(param){
+  return new Promise(async(res,rej)=>{
+    const w={param,res,t:setTimeout(()=>{waiters=waiters.filter(x=>x!==w);rej(new Error('ما ردت الساعة'))},4000)};
+    waiters.push(w);
+    try{await write([1,param])}catch(e){clearTimeout(w.t);waiters=waiters.filter(x=>x!==w);rej(e)}
+  });
+}
+const tmo=(p,s,m)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error(m)),s*1000))]);
+
+/* find the watch: remembered first, then the picker */
+async function knownDevice(){
+  if(skipKnown||!navigator.bluetooth.getDevices) return null;
+  try{
+    const list=await navigator.bluetooth.getDevices();
+    const id=lsGet('rayId','');
+    return list.find(x=>x.id===id)||list.find(x=>/shine|ray|misfit/i.test(x.name||''))||null;
+  }catch(e){return null}
+}
+async function connect(){
+  if(busy) return; busy=true;
+  setConn('busy','أتصل...');
+  try{
+    if(dev&&!dev.gatt.connected){            // same session: reconnect straight away
+      try{await setup(dev,12);return}catch(e){log('أرجّع الاتصال من القائمة')}
+    }
+    const k=await knownDevice();
+    if(k){
+      log('الساعة المحفوظة: '+(k.name||'?')+'، أتصل مباشرة');
+      try{await setup(k,12);return}
+      catch(e){log('المحفوظة ما ردت، أفتح القائمة');skipKnown=true}
+    }
+    log('أدوّر على الساعة...');
+    let d;try{d=await navigator.bluetooth.requestDevice(REQ_OPTS)}catch(e){if(/gesture|Security/i.test((e.message||'')+e.name)){setConn('off','اضغط اتصال مرة ثانية');return}throw e}
+    log('اخترت: '+(d.name||'?'));
+    await setup(d,20);
+  }catch(e){
+    log('خطأ: '+(e.message||e.name||e));
+    setConn('off',/cancel/i.test(e.message)?'غير متصل':'ما اتصل. إذا تكرر: الإعدادات ← بلوتوث ← (i) جنب الساعة ← انسَ الجهاز');
+  }finally{busy=false}
+}
+async function setup(d,secs){
+  dev=d;
+  if(!d._hooked){d._hooked=true;d.addEventListener('gattserverdisconnected',()=>{if(!busy)setConn('off','انقطع الاتصال. يرجع لحاله لما ترجع للصفحة');log('انقطع الاتصال')})}
+  const srv=await tmo(d.gatt.connect(),secs,'الاتصال طوّل');
+  const s=await tmo(srv.getPrimaryService(SVC),15,'ما لقيت خدمة الساعة');
+  ctrl=await tmo(s.getCharacteristic(CTRL),15,'ما لقيت خانة الأوامر');
+  await tmo(ctrl.startNotifications(),15,'الإشعارات ما اشتغلت');
+  ctrl.addEventListener('characteristicvaluechanged',onNotify);
+  try{
+    fctl=await s.getCharacteristic(FCTL); fdat=await s.getCharacteristic(FDAT);
+    await fctl.startNotifications(); await fdat.startNotifications();
+    fctl.addEventListener('characteristicvaluechanged',onFileCtl);
+    fdat.addEventListener('characteristicvaluechanged',onFileData);
+  }catch(e){fctl=fdat=null;log('خانات الملفات ما اشتغلت: '+e.message)}
+  try{const bs=await srv.getPrimaryService('battery_service');battChar=await bs.getCharacteristic('battery_level')}catch(e){battChar=null}
+  try{const di=await srv.getPrimaryService('device_information');const c=await di.getCharacteristic('serial_number_string');
+    $('serial').textContent='S/N '+new TextDecoder().decode(await c.readValue())}catch(e){}
+  if(d.id) lsSet('rayId',d.id);
+  skipKnown=false;
+  setConn('on','متصل: '+(d.name||'Ray'));
+  log('تم الاتصال');
+  await readAll();
+  if(S.auto&&fctl) await pull();
+}
+async function readBattery(){
+  if(!battChar) return;
+  const v=(await battChar.readValue()).getUint8(0);
+  lsSet('rayBat',v);showBat(v);
+}
+async function readPoints(){
+  const b=await ask(6);
+  const v=(b[3]|(b[4]<<8)|(b[5]<<16));
+  $('vPts').textContent=fmtN(v);
+}
+async function readTime(){
+  const b=await ask(4);const dv=new DataView(b.buffer);
+  const sec=dv.getUint32(2,true), tz=dv.getInt16(8,true);
+  const d=new Date((sec+tz*60)*1000);
+  $('vTime').textContent=`${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  const drift=Math.round(sec-Date.now()/1000);
+  const n=$('nTime');
+  if(Math.abs(drift)>120){n.textContent=`${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}، يحتاج ضبط`;n.classList.add('warn')}
+  else{n.textContent=`مضبوط (فرق ${drift} ث)`;n.classList.remove('warn')}
+  return drift;
+}
+async function readAll(){
+  try{await readBattery()}catch(e){log('خطأ: '+e.message)}
+  try{await readPoints()}catch(e){log('خطأ: '+e.message)}
+  try{const drift=await readTime(); if(Math.abs(drift)>120){log('وقت الساعة غلط، أضبطه');await syncTime()}}catch(e){log('خطأ: '+e.message)}
+}
+async function syncTime(){
+  try{
+    const now=Date.now(),sec=Math.floor(now/1000),ms=now%1000,tz=-new Date().getTimezoneOffset();
+    const b=new Uint8Array(10),dv=new DataView(b.buffer);
+    b[0]=2;b[1]=4;dv.setUint32(2,sec,true);dv.setUint16(6,ms,true);dv.setInt16(8,tz,true);
+    await write([...b]);log('تم ضبط الوقت');
+    await sleep(400);await readTime();
+  }catch(e){log('خطأ: '+e.message)}
+}
+async function blink(){try{await write([2,0xF1,5])}catch(e){log('خطأ: '+e.message)}}
+async function sendHex(){
+  const s=$('hex').value.replace(/[^0-9a-fA-F]/g,'');
+  if(!s||s.length%2){log('اكتب الأمر بالهيكس، رقمين لكل بايت (مثال 0106)');return}
+  try{await write(s.match(/../g).map(x=>parseInt(x,16)))}catch(e){log('خطأ: '+e.message)}
+}
+
+/* come back to the page → reconnect by itself (iPhone cuts Bluetooth for background pages) */
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&dev&&!dev.gatt.connected&&!busy){log('رجعت للصفحة، أرجّع الاتصال');connect()}
+});
+
+/* ---------- Activity file transfer (decoded from Misfit SDK) ----------
+   request on 0003: 01 | handle u16 | offset u32 | length u32   (activity handle 0x0100)
+   0003 reply: status in byte 3 (0 = ok); 0003 packet starting 0x08 = transfer finished
+   0004 data: byte0 = seq (low 6 bits, bit7 = last), rest = payload
+   file: handle u16 | format u16 | length u32 | timestamp u32 | ms u16 | tz u16 | records... | crc32 */
+function onFileCtl(e){
+  const b=new Uint8Array(e.target.value.buffer); log('⇐ '+hex(b));
+  if(!xfer) return;
+  if(b[0]===8){xfer.done=true;xfer.finish();return}
+  if(!xfer.gotHead){xfer.gotHead=true; if(b.length>=4&&b[3]!==0){xfer.fail(new Error('الساعة رفضت الطلب (status '+b[3]+')'))}}
+  xfer.poke();
+}
+function onFileData(e){
+  const b=new Uint8Array(e.target.value.buffer);
+  if(!xfer) return;
+  const seq=b[0]&63, want=(xfer.seq+1)&63;
+  if(xfer.seq>=0&&seq!==want){log('تسلسل غلط: '+seq+' بدل '+want)}
+  xfer.seq=seq; xfer.parts.push(b.slice(1)); xfer.bytes+=b.length-1;
+  if(b[0]&128) xfer.last=true;
+  if(xfer.parts.length%20===0){log('… استلمت '+xfer.bytes+' بايت');$('stxt').textContent='أسحب الحركة… '+fmtN(xfer.bytes)+' بايت'}
+  xfer.poke();
+}
+/* one request on the file channel; payload comes on 0004 until 0003 says 08 (done) */
+function fileReq(req,label){
+  return new Promise(async(res,rej)=>{
+    let t=null;
+    xfer={seq:-1,parts:[],bytes:0,gotHead:false,done:false,last:false,
+      poke(){clearTimeout(t);t=setTimeout(()=>{ if(xfer.last||xfer.bytes) xfer.finish(); else xfer.fail(new Error('ما ردت الساعة على '+label)) },8000)},
+      finish(){clearTimeout(t);const all=new Uint8Array(xfer.bytes);let o=0;for(const p of xfer.parts){all.set(p,o);o+=p.length}xfer=null;res(all)},
+      fail(err){clearTimeout(t);xfer=null;rej(err)}};
+    xfer.poke();
+    log('→F '+hex(req));
+    try{ if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req) }
+    catch(e){xfer&&xfer.fail(e)}
+  });
+}
+function getActivityFile(){
+  const req=new Uint8Array(11),dv=new DataView(req.buffer);
+  req[0]=1;dv.setUint16(1,0x0100,true);dv.setUint32(3,0,true);dv.setUint32(7,0xFFFF,true);
+  return fileReq(req,'طلب الملف');
+}
+/* same as the official app: 05 = how many activity files are waiting on the watch */
+async function listFiles(){
+  const p=await fileReq(new Uint8Array([5]),'طلب قائمة الملفات');
+  return {count:p.length?p[0]:0,total:p.length>=5?(p[1]|p[2]<<8|p[3]<<16|p[4]<<24)>>>0:0};
+}
+function parseFile(f){
+  if(f.length<24) return null;
+  const dv=new DataView(f.buffer,f.byteOffset,f.length);
+  const head={handle:dv.getUint16(0,true),format:dv.getUint16(2,true),length:dv.getUint32(4,true),ts:dv.getUint32(8,true),tz:dv.getInt16(14,true)};
+  // byte 19 = how many (entry type, extra bytes) pairs follow; the minute records come after them
+  const nT=f[19]; if(f.length<20+nT*2+4) return null;
+  const size={}; for(let k=0;k<nT;k++) size[f[20+k*2]]=f[21+k*2];
+  const sz=b=>b<200?2:(size[b]===undefined?1:size[b]+1);
+  const d=f.subarray(20+nT*2,f.length-4);
+  const mins=[], taps=[]; let h=head.ts, i=0;
+  const add=(steps,points,varc)=>{mins.push({t:h,steps,points,varc});h+=60};
+  while(i<d.length){
+    const b0=d[i], a=sz(b0);
+    if(i+a<d.length&&d[i+a]===253){i+=a+sz(253);continue}   // 253 = "ignore the entry before me"
+    if(b0<200){
+      if(i+2>d.length) break;
+      const b1=d[i+1];
+      if(head.format===20){
+        if(b0&1) add(b0&14,0,(b1>>2)+((b0>>4)<<6)); else add(b0,0,Math.trunc(Math.sqrt(b1*8)));
+      }else{
+        if(b0&1) add(b0&14,b1&3,(b1>>2)+((b0>>4)<<6)); else add(b0,b1,10000);
+      }
+    }else if(b0===220){ // a very active minute (steps don't fit in one byte)
+      if(i+5<=d.length) add(d[i+1]|d[i+2]<<8,d[i+3]|d[i+4]<<8,10000);
+    }else if(b0===213||b0===215){ // double / triple tap
+      if(i+2<=d.length) taps.push({t:h,kind:b0===213?2:3,n:d[i+1]});
+    }
+    i+=a;
+  }
+  return {head,mins,taps};
+}
+/* storage of parsed minutes on this phone */
+function loadMins(){try{return JSON.parse(localStorage.getItem('rayMins')||'{}')}catch(e){return {}}}
+function saveMins(m){try{localStorage.setItem('rayMins',JSON.stringify(m))}catch(e){log('ما قدرت أحفظ: '+e.message)}}
+/* each minute is saved under its own time, so reading a file twice just rewrites the same minutes.
+   (no more wiping a whole time range: a bad file used to erase hours of good data) */
+function merge(list){
+  const m=loadMins(); if(!list.length) return m;
+  for(const x of list){m[x.t]=[x.steps,x.points,x.varc]}
+  saveMins(m); return m;
+}
+/* the newest minute can't be in the future: if the record count runs ahead of the clock, slide the file back */
+function anchor(list){
+  if(!list.length) return 0;
+  const nowMin=Math.floor(Date.now()/60000)*60, last=list[list.length-1].t;
+  if(last<=nowMin) return 0;
+  const sh=nowMin-last; for(const x of list) x.t+=sh; return sh;
+}
+
+/* like the official app: list the files, then for each one: read it, save it here, then erase it from the watch.
+   A file is only erased after it was read whole (length matches its header) and saved. */
+async function pull(){
+  if(!fctl){log('خانات الملفات مو جاهزة، سوّ اتصال من جديد');return}
+  $('bPull').disabled=true;
+  $('stxt').textContent='أسحب الحركة…';
+  try{
+    let n=-1;
+    try{const L=await listFiles();n=L.count;log(`في الساعة ${n} ملف (${fmtN(L.total)} بايت)`)}catch(e){log('ما قدرت أقرأ قائمة الملفات: '+e.message)}
+    const rounds=n<0?1:Math.min(n,40);
+    let got=0,minsAll=0;
+    for(let k=0;k<rounds;k++){
+      $('stxt').textContent=`أسحب الحركة… ملف ${k+1} من ${rounds}`;
+      const f=await getActivityFile();
+      log('وصل الملف: '+f.length+' بايت');
+      try{let bin='';for(const x of f)bin+=String.fromCharCode(x);lsSet('rayRaw',btoa(bin));lsSet('rayRawAt',String(Date.now()))}catch(e){}
+      const p=parseFile(f);
+      if(!p){log('الملف فاضي أو قصير، وقفت هنا');break}
+      log(`الملف: format ${p.head.format}، يبدأ ${new Date(p.head.ts*1000).toLocaleString('en-GB')}، ${p.mins.length} دقيقة`);
+      const sh=anchor(p.mins); if(sh) log(`الملف كان سابق الوقت بـ ${-sh/60} دقيقة، رجّعته`);
+      if(sh<-30*60){log('وقت الملف غلط بأكثر من نص ساعة، ما حفظته ولا مسحته');break}
+      merge(p.mins); got++; minsAll+=p.mins.length;
+      if(n<0) break;                                   // no list → old behaviour, don't erase
+      if(f.length!==p.head.length){log('الملف وصل ناقص، ما مسحته من الساعة');break}
+      const req=new Uint8Array([3,0x00,0x01]); log('→F '+hex(req)+' (مسح بعد الحفظ)');
+      if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req);
+      await sleep(1200);
+    }
+    if(got){log(`خلصت: ${got} ملف، ${fmtN(minsAll)} دقيقة`);lsSet('rayLastPull',Math.floor(Date.now()/1000))}
+    else if(n===0) log('ما فيه ملفات جديدة في الساعة');
+    render();
+  }catch(e){log('خطأ: '+e.message)}
+  finally{const on=!!(dev&&dev.gatt.connected);$('bPull').disabled=!on;if(on)$('stxt').textContent='متصل: '+(dev.name||'Ray')}
+}
+async function eraseAndNext(){
+  hide($('nextConfirm'));
+  try{
+    const req=new Uint8Array([3,0x00,0x01]); log('→F '+hex(req)+' (مسح)');
+    if(fctl.writeValueWithoutResponse) await fctl.writeValueWithoutResponse(req); else await fctl.writeValue(req);
+    await sleep(1500);
+    await pull();
+  }catch(e){log('خطأ: '+e.message)}
+}
+
+/* Misfit Shine/Ray automatic sleep detection (file formats 17–19), re-implemented from the
+   original Misfit app's algorithm library so results match the official app.
+   Input: per-minute variance (uint) and steps (0..255). Output: sleep sessions with minute indexes. */
+const misfitSleep = (() => {
+  const f = Math.fround;
+  const P = {seg:5, offWrist:120, wakeMin:5, wakeLen:20, wakeLong:60, wakeStepRate:1.0, minSleep:150, maxSleep:1200,
+    effPct:60, varThr:50, kdeScale:0.4, win:9, skipWake:60, kdeBw:5, bmMaxLen:180, bmWake:0.2, bmSteps:2.9};
+  const KDE = f(0.9801989793777466), TWO_PI = f(6.2831854820251465);
+  const Q = [8.0, 0.5, 1.0, 1.0, f(7.40741)].map(f);
+  const EPS_SQRT = f(0.0010000000474974513), EPS_CEIL = f(1.1920928955078125e-07);
+  const trunc = x => x < 0 ? Math.ceil(x) : Math.floor(x);
+  const floorf = x => f(trunc(x));
+  const roundf = x => f(trunc(f(x + 0.5)));
+  const ceilf = x => f(trunc(f(f(x + 1) - EPS_CEIL)));
+  function sqrtf(x) {
+    x = f(x); if (!(x > 0)) return 0;
+    let lo, hi; if (x < 1) { hi = f(1); lo = x } else { hi = x; lo = f(1) }
+    while (f(hi - lo) > EPS_SQRT) { const m = f(f(lo + hi) * 0.5); if (x <= f(m * m)) hi = m; else lo = m }
+    return lo;
+  }
+  function powf(b, e) {
+    let r = (e >> 7 & 1) ? b : f(1);
+    for (let bit = 6; bit >= 1; bit--) { r = f(r * r); if (e >> bit & 1) r = f(r * b) }
+    return (e & 1) ? f(f(r * r) * b) : f(r * r);
+  }
+  // calls cb(start,end) for each maximal run of value `v`
+  function segments(a, n, v, cb) {
+    if (n < 0) return; let cur = 99, s = -1;
+    if (n > 0) { cur = a[0]; s = 0; for (let i = 1; i < n; i++) { const x = a[i]; if (x !== cur) { if (cur === v) cb(s, i - 1); s = i; cur = x } } }
+    if (cur === v) cb(s, n - 1);
+  }
+  const setRange = (a, s, e, v) => { for (let i = s; i <= e; i++) a[i] = v };
+  const firstEq1 = (a, from, to) => { if (to < from) { for (let i = from; i >= to; i--) if (a[i] === 1) return i } else { for (let i = from; i <= to; i++) if (a[i] === 1) return i } return -1 };
+  const at = (a, i) => (i >= 0 && i < a.length) ? a[i] : 0;
+
+  function findChunk(sess, st, rev, pred) {
+    let seg = [-1, -1], found = false, stop = false;
+    let a = sess.start, b = sess.end; if (rev) { a = sess.end; b = sess.start }
+    const handle = (state, p2, p3) => {
+      if (pred(state)) {
+        if (found) { seg = [Math.min(seg[0], p2, p3), Math.max(seg[1], p2, p3)] }
+        else { seg = [Math.min(p2, p3), Math.max(p2, p3)]; found = true }
+      } else if (found) stop = true;
+    };
+    if (a !== b) {
+      let prev = 99, s = -1;
+      if (b < a) { for (let k = a; k >= b; k--) { if (stop) return seg; const v = at(st, k); let t = k; if (s >= 0) { t = s; if (v !== prev) { handle(prev, s, k + 1); t = k } } prev = v; s = t } }
+      else { for (let k = a; k <= b; k++) { if (stop) return seg; const v = at(st, k); let t = k; if (s >= 0) { t = s; if (v !== prev) { handle(prev, s, k - 1); t = k } } prev = v; s = t } }
+      if (!stop) handle(prev, s, b);
+    }
+    return seg;
+  }
+  function zerosBetweenOnes(c, bits) {
+    const i1 = firstEq1(bits, c[0], c[1]);
+    if (i1 < c[0] || c[1] < i1) return 0;
+    const i2 = firstEq1(bits, c[1], c[0]);
+    if (i2 < c[0] || c[1] < i2) return 0;
+    let z = 0; for (let k = i1; k <= i2; k++) if (at(bits, k) === 0) z++;
+    return z;
+  }
+  function filterBookmarks(list, st, steps) {
+    if (list.length <= 1) return;
+    let i = 0;
+    while (i < list.length - 1) {
+      let next = i + 1;
+      const a = list[i], b = list[i + 1];
+      let zeros = 0, sum = 0;
+      if (a < b) for (let k = a; k < b; k++) { if (at(st, k) === 0) zeros++; sum += at(steps, k) }
+      const len = b - a;
+      const zr = f(zeros / len), sr = f(sum / len);
+      let del = false;
+      if (zr < f(0.2) || sr < f(2.9)) { if (len <= P.bmMaxLen && f(1 - f(60 / 100)) <= zr) del = true }
+      else if (len <= P.bmMaxLen) del = true;
+      if (del) { list.splice(i, 1); next = i - (i > 0 ? 1 : 0) }
+      i = next;
+    }
+  }
+  // fused multiply-add in float32 (a*b is exact in double)
+  const fma = (a, b, c) => f(a * b + c);
+  function quality(s) {
+    if (!s.changes) return 0;
+    let prev = -1, sum = f(0);
+    const sl = f(s.sleep / 60), dp = f(s.deep / 60), du = f((s.end - s.start) / 60);
+    const ch = s.changes;
+    for (let i = 0; i < Math.trunc(ch.length / 2); i += 2) {
+      const off = ch[i], state = ch[i + 1];
+      if (state !== 0) { if (prev >= 0) { const d = f((off - prev) / 60); sum = fma(d, d, sum); prev = -1 } }
+      else prev = off;
+    }
+    const base = fma(Q[2], f(dp + f(dp / du)), f(sl + f(sl / du)));
+    const v = f(base - f(Q[3] * sqrtf(sum)) );
+    return Math.min(100, trunc(ceilf(f(v * Q[4]))));
+  }
+  function detect(variance, steps) {
+    const n = variance.length; if (n <= 0) return [];
+    const bits = new Uint8Array(n);
+    for (let i = 0; i < n; i++) bits[i] = (variance[i] >>> 0) <= P.varThr ? 1 : 0;
+    // perfectly still for 2h+ = watch off the wrist
+    segments(bits, n, 1, (s, e) => { if (e - s >= P.offWrist) setRange(bits, s, e, 0) });
+    // majority vote over 9 minutes
+    const st = new Uint8Array(n);
+    { const h = Math.trunc(P.win / 2); let z = h, o = 0;
+      for (let j = 0; ; j++) { if (bits[j] === 0) z++; else o++; if (!(j + 1 < n && j + 1 <= h)) break }
+      let r = h;
+      for (let i = 0; i < n; i++) {
+        st[i] = z < o ? 1 : 0;
+        r++;
+        if (r < n && bits[r] === 1) o++; else z++;
+        if (r - 2 * h < 1 || bits[i - h] !== 1) z--; else o--;
+      } }
+    segments(st, n, 1, (s, e) => { if (e - s + 1 < P.seg) setRange(st, s, e, 0) });
+    // deep sleep: almost no restless minutes nearby (gaussian-weighted)
+    { const r = trunc(roundf(f(sqrtf(P.kdeBw) * 4))), thr = f(P.kdeScale * sqrtf(TWO_PI));
+      for (let i = 0; i < n; i++) {
+        if (st[i] !== 1) continue;
+        const lo = Math.max(0, i - r), hi = Math.min(n - 1, i + r);
+        let sum = f(0);
+        for (let j = lo; j <= hi; j++) if (bits[j] === 0) sum = f(sum + powf(KDE, (i - j) * (i - j)));
+        if (!(thr <= sum)) st[i] = 2;
+      } }
+    segments(st, n, 2, (s, e) => { if (e - s + 1 < P.seg) setRange(st, s, e, 1) });
+    segments(st, n, 0, (s, e) => { if (e - s + 1 < P.wakeMin) setRange(st, s, e, 1) });
+    const wakes = []; segments(st, n, 0, (s, e) => wakes.push([s, e]));
+    // candidate starting points
+    const bm = [];
+    if (wakes.length < 1) bm.push(0);
+    else { if (wakes[0][0] > 0) bm.push(0); for (const w of wakes) if (w[1] - w[0] + 1 >= P.wakeMin) bm.push(w[1]) }
+    filterBookmarks(bm, st, steps);
+    // real wake periods: long, or walking about
+    const realWakes = wakes.filter(w => { const len = w[1] - w[0] + 1; let s = 0; for (let k = w[0]; k <= w[1]; k++) s += at(steps, k);
+      return (P.wakeLen <= len && f(1.0) < f(s / len)) || P.wakeLong <= len });
+    const lastSleep = firstEq1(st, n - 1, 0);
+    const out = []; let prevEnd = -1;
+    for (const b0 of bm) {
+      if (!(prevEnd < b0)) continue;
+      let wi = -1, skip = false;
+      for (let k = 0; k < realWakes.length; k++) {
+        const w = realWakes[k];
+        if (b0 < w[0]) { wi = k; break }
+        if (b0 <= w[1] && P.skipWake <= w[1] - b0) { skip = true; break }
+      }
+      if (skip) continue;
+      const s = {bookmark: b0, start: b0, end: b0};
+      let k = b0;
+      for (; k < n; k++) if (st[k] !== 0) { s.start = k; break }
+      let end = (wi >= 0) ? realWakes[wi][0] - 1 : lastSleep;
+      if (wi >= 0 && !(b0 < n)) end = lastSleep;
+      s.end = end < n - 1 ? (end < 0 ? 0 : end) : n - 1;
+      const isSleep = v => v === 1 || v === 2, isWake = v => v === 0;
+      { const c1 = findChunk(s, st, 0, isSleep);
+        if (c1[0] >= 0) { const c2 = findChunk(s, st, 0, isWake);
+          if (c2[0] >= 0) { const z = zerosBetweenOnes(c1, bits);
+            if ((c1[1] - s.start) + 1 <= (s.end - s.start + 1) * 0.25) {
+              const fl = floorf(Math.trunc((c1[1] - c1[0] + 1) / 60));
+              if (f(z) <= f(fl + 1)) s.start = c2[1] + 1;
+            } } } }
+      { const c1 = findChunk(s, st, 1, isSleep);
+        if (c1[0] >= 0) { const c2 = findChunk(s, st, 1, isWake);
+          if (c2[0] >= 0) { const z = zerosBetweenOnes(c1, bits);
+            if ((s.end - c2[0]) + 1 <= (s.end - s.start + 1) * 0.25) {
+              const fl = floorf(Math.trunc((c1[1] - c1[0] + 1) / 60));
+              if (!(f(fl + 1) < f(z))) s.end = c2[0] - 1;
+            } } } }
+      let a = s.start, e = s.end;
+      if (a >= 0) { while (true) { if (at(bits, a) !== 0) break; if (!(a + 1 < n)) break; a++ } }
+      if (e >= 0) { while (at(bits, e) === 0 && e >= 1) e-- }
+      const fl = floorf(Math.trunc((s.end - s.start + 1) / 60));
+      let ok = false;
+      if (a <= e) { let z = 0; for (let k2 = a; k2 <= e; k2++) { if (at(bits, k2) === 0) z++; if (trunc(f(fl + 1)) < z) { ok = true; break } } }
+      if (!ok) continue;
+      let sleep = 0, deep = 0;
+      for (let k2 = s.start; k2 <= s.end; k2++) { const v = at(st, k2); if (v !== 0) { sleep++; if (v === 2) deep++ } }
+      s.sleep = sleep; s.deep = deep;
+      const dur = s.end - s.start + 1;
+      if (P.minSleep <= sleep && sleep <= P.maxSleep && f(P.effPct / 100) <= f(f(sleep) / f(dur)) && s.start < s.end) {
+        const ch = [0, at(st, s.start)];
+        for (let k2 = s.start; k2 < s.end; k2++) if (at(st, k2) !== at(st, k2 + 1)) ch.push(k2 + 1 - s.start, at(st, k2 + 1));
+        s.changes = ch;
+        s.quality = quality(s);
+        s.states = Array.from(st.subarray(s.start, s.end + 1));
+        out.push(s); prevEnd = s.end;
+      }
+    }
+    return out;
+  }
+  return {detect};
+})();
+
+/* ---------- sleep ----------
+   Same method as the official Misfit app (Shine/Ray file format 19):
+   minutes with tiny-movement variance <= 50 are sleep candidates, smoothed, deep = almost no restless
+   minutes nearby. Unlike the app, it counts at any hour (day sleep too). */
+function nightFor(m,dayKey){
+  const [y,mo,d]=dayKey.split('-').map(Number);
+  const start=new Date(y,mo-1,d-1,12).getTime()/1000, end=new Date(y,mo-1,d+1,0).getTime()/1000, dayStart=new Date(y,mo-1,d,0).getTime()/1000;
+  const runs=[];let run=null;
+  for(let t=start;t<end;t+=60){const r=m[t];
+    if(r){if(!run){run={t0:t,v:[],s:[]};runs.push(run)}run.v.push(r[2]>>>0);run.s.push(r[0]&255)}else run=null}
+  let best=null;
+  for(const R of runs){
+    if(R.v.length<150) continue;
+    for(const x of misfitSleep.detect(R.v,R.s)){
+      const from=R.t0+x.start*60, to=R.t0+(x.end+1)*60;
+      // like the app, a sleep belongs to the day it ends on
+      if(to<dayStart||to>end) continue;
+      if(!best||x.sleep>best.x.sleep) best={x,from,to};
+    }
+  }
+  if(!best) return null;
+  const {x,from,to}=best, names=['wake','light','deep'];
+  const st=x.states.map(v=>names[v]);
+  let wakes=0;for(let i=0;i<st.length;i++) if(st[i]==='wake'&&(i===0||st[i-1]!=='wake')) wakes++;
+  return {from,to,st,c:{deep:x.deep,light:x.sleep-x.deep,wake:st.length-x.sleep},wakes,quality:x.quality};
+}
+function hypno(s){
+  const N=s.st.length, Y={wake:8,light:34,deep:60}, H=16, col={wake:'var(--wake)',light:'var(--light)',deep:'var(--deep)'};
+  const runs=[];let cur=null,i=0;for(const v of s.st){if(cur&&cur.v===v)cur.n++;else{cur={v,n:1,x:i};runs.push(cur)}i++}
+  let path='';runs.forEach((r,k)=>{if(k){path+=`M${r.x} ${Y[runs[k-1].v]+H/2}V${Y[r.v]+H/2}`}});
+  const ticks=[];for(let t=Math.ceil(s.from/3600)*3600;t<s.to;t+=3600){const x=(t-s.from)/60;if(x>N*.06&&x<N*.94)ticks.push(`<line x1="${x}" x2="${x}" y1="0" y2="80" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>`)}
+  return `<svg class="hyp" viewBox="0 0 ${N} 80" preserveAspectRatio="none" aria-label="مراحل النوم">${ticks.join('')}
+    <path d="${path}" stroke="var(--muted)" stroke-width="1" vector-effect="non-scaling-stroke" fill="none" opacity=".35"/>
+    ${runs.map(r=>`<rect x="${r.x}" y="${Y[r.v]}" width="${r.n}" height="${H}" fill="${col[r.v]}"/>`).join('')}</svg>
+    <div class="saxis"><span>${hm(s.from)}</span><span>${hm(s.to)}</span></div>
+    <div class="legend"><span><b class="s-wake"></b>صاحي <span class="v">${fmtH(s.c.wake)}</span></span><span><b class="s-light"></b>خفيف <span class="v">${fmtH(s.c.light)}</span></span><span><b class="s-deep"></b>عميق <span class="v">${fmtH(s.c.deep)}</span></span></div>`;
+}
+function sleepBar(s){
+  const runs=[];let cur=null;for(const v of s.st){if(cur&&cur.v===v)cur.n++;else{cur={v,n:1};runs.push(cur)}}
+  return `<div class="sleepbar">${runs.map(r=>`<span class="s-${r.v}" style="width:${r.n/s.st.length*100}%"></span>`).join('')}</div>
+    <div class="saxis"><span>${hm(s.from)}</span><span>${hm(s.to)}</span></div>
+    <div class="legend"><span><b class="s-deep"></b>عميق <span class="v">${fmtH(s.c.deep)}</span></span><span><b class="s-light"></b>خفيف <span class="v">${fmtH(s.c.light)}</span></span><span><b class="s-wake"></b>صاحي <span class="v">${fmtH(s.c.wake)}</span></span></div>`;
+}
+
+/* ---------- render ---------- */
+function showBat(v){
+  if(v===null||v===undefined||v==='')return; v=+v;
+  $('vBat').textContent=v+'٪';
+  const ic=$('battIcon');ic.querySelector('i').style.width=`calc(${Math.min(100,v)}% - 2px)`;ic.classList.toggle('low',v<=20);
+}
+function lastSyncText(){
+  const lp=+lsGet('rayLastPull',0); if(!lp) return 'ما سحبنا لين الحين';
+  const mins=Math.round((Date.now()/1000-lp)/60);
+  return 'آخر سحب: '+(mins<1?'الحين':mins<60?`قبل ${mins} د`:mins<24*60?`قبل ${Math.round(mins/60)} س`:`${DAYS[new Date(lp*1000).getDay()]} ${hm(lp)}`);
+}
+/* Day totals the same way as the official Misfit app:
+   - steps and points: sum of every minute (the app's activity + gap sessions cover every minute)
+   - distance: per minute, stride = height x factor that grows with steps-per-minute
+     (0.33 up to 80 spm, then 0.33..0.45 at 140, 0.45..0.841 at 186, 0.841..0.91 at 255), in miles, then km
+   - calories: the app's AlgorithmUtil formula with its default factors (alpha .15, beta 1.3, gamma .5, delta .925)
+     on the day's points and the Mifflin BMR from weight, height, age and gender */
+const ACT_CAD=60, HOUR_STEPS=250, ACT_GOAL=30, HRS_GOAL=9;
+function misfitMinMiles(s){   // calculateNormalizedOneMinDistance, miles per inch of height
+  const f=Math.fround, d=f(63360);
+  if(s<=80) return f(s*f(5.2083337322983425e-06));
+  if(s<141) return f(s*f(f(f(s-80)*f(0.0020000000949949026)+f(0.33000001311302185))/d));
+  if(s<187) return f(s*f(f(f(s-140)*f(0.008500000461935997)+f(0.44999998807907104))/d));
+  if(s-187<69) return f(s*f(f(f(s-186)*f(0.0010000000474974513)+f(0.8410000205039978))/d));
+  return f(s*f(1.4362373804033268e-05));
+}
+function misfitBMR(){   // AlgorithmUtil: weight*10 + height(m)*625 - age*5 + (female ? -161 : 5)
+  if(!S.weight||!S.height||!S.birth) return 0;
+  const age=new Date().getFullYear()-S.birth;
+  const hIn=S.height/2.54, hM=hIn*0.02539999969303608;
+  return (S.weight*10+hM*625)-age*5+(S.gender===1?-161:5);
+}
+function misfitCalories(points,hours){
+  const bmr=misfitBMR(); if(!bmr) return null;
+  const a=Math.fround(0.15)*points*(S.weight/60)+(Math.fround(1.3)*hours*bmr)/24;
+  return Math.min(a,Math.fround(0.5)*a+Math.fround(0.925)*bmr);
+}
+function dayTotals(m){
+  const by={};
+  for(const k in m){const t=+k, r=m[k], c=r[0], dk=dkey(t);
+    const o=by[dk]||(by[dk]={steps:0,pts:0,act:0,hours:new Array(24).fill(0),mins:0,mi:0,km:0,kcal:null,walkMin:0});
+    o.steps+=c;o.pts+=r[1];o.mins++;if(c>=ACT_CAD)o.act++;if(c>0)o.walkMin++;o.hours[new Date(t*1000).getHours()]+=c;
+    o.mi+=misfitMinMiles(c);
+  }
+  const today=dkey(Date.now()/1000), d0=new Date();d0.setHours(0,0,0,0);
+  for(const k in by){const o=by[k];
+    o.hrs=o.hours.filter(v=>v>=HOUR_STEPS).length;
+    o.km=S.height?o.mi*(S.height/2.54)*1.609344:0;
+    o.kcal=misfitCalories(o.pts,k===today?(Date.now()-d0.getTime())/3600000:24);
+  }
+  return by;
+}
+function render(){
+  const m=loadMins(), by=dayTotals(m), goal=S.goal, keys=Object.keys(m);
+  const today=dkey(Date.now()/1000), T=by[today];
+  // header
+  const nowD=new Date(), hr=nowD.getHours();
+  $('hi').textContent=hr<4?'سهران؟ 🌙':hr<12?'صباح الخير ☀️':hr<17?'هلا والله 👋':'مساء الخير 🌙';
+  $('today').textContent=`${DAYS[nowD.getDay()]} ${nowD.getDate()} ${MONTHS[nowD.getMonth()]}`;
+  // today
+  const steps=T?T.steps:0, has=keys.length>0;
+  const C1=2*Math.PI*52, C2=2*Math.PI*38, C3=2*Math.PI*24, f=steps/goal;
+  const arc=(id,C,x)=>$(id).setAttribute('stroke-dasharray',`${(C*Math.max(0,Math.min(1,x))).toFixed(1)} ${C.toFixed(1)}`);
+  arc('ringArc',C1,f); arc('ringArc2',C1,f-1);
+  arc('ringB',C2,(T?T.act:0)/ACT_GOAL); arc('ringC',C3,(T?T.hrs:0)/HRS_GOAL);
+  const ring=document.querySelector('.ring'); if(f>=1&&!ring.dataset.popped){ring.dataset.popped=1;ring.classList.add('done')}
+  $('tSteps').textContent=has?fmtN(steps):'—'; $('tGoal').textContent=' / '+fmtN(goal);
+  $('tAct').textContent=has?(T?T.act:0):'—'; $('tActG').textContent=` / ${ACT_GOAL} د`;
+  $('tHrs').textContent=has?(T?T.hrs:0):'—'; $('tHrsG').textContent=` / ${HRS_GOAL}`;
+  $('tKm').innerHTML=!has?'—':S.height?`${(T?T.km:0).toFixed(2)}<small> كم</small>`:'<small>حط طولك في الإعدادات</small>';
+  $('tPace').innerHTML=has&&T&&T.walkMin?`${fmtN(T.steps/T.walkMin)}<small> خطوة/د</small>`:'—';
+  $('tCal').innerHTML=!has?'—':(T&&T.kcal!==null)?`${fmtN(T.kcal)}<small> س.ح</small>`:misfitBMR()?'0':'<small>حط طولك ووزنك وسنة ميلادك</small>';
+  showBat(lsGet('rayBat',null));
+  const last=has?Math.max(...keys.map(Number)):0;
+  const closed=[f>=1,(T?T.act:0)>=ACT_GOAL,(T?T.hrs:0)>=HRS_GOAL].filter(Boolean).length;
+  $('tMsg').textContent=!has?'نبدأ؟':closed===3?'سكّرت الحلقات الثلاث 🏆':f>=2?'ضعف هدف الخطوات! 🔥':f>=1?'وصلت هدف الخطوات 👏':f>=.75?'قربت، كمّل 💪':'اليوم';
+  $('tNote').textContent=!has?'اضغط اتصال عشان نسحب الحركة من الساعة.'
+    : (f>=1?`زدت على الهدف ${fmtN(steps-goal)} خطوة.`:`باقي ${fmtN(goal-steps)} خطوة، تقريباً ${Math.max(1,Math.round((goal-steps)/100))} دقيقة مشي.`)+` آخر تحديث ${hm(last+60)}.`;
+  const hrs=T?T.hours:new Array(24).fill(0), hmx=Math.max(1,...hrs);
+  $('tHours').innerHTML=hrs.map((v,i)=>`<i class="${i===hr?'now':''}${v===0&&i<=hr?' empty':''}" style="height:${i>hr?0:Math.max(6,Math.round(v/hmx*100))}%;${v>=HOUR_STEPS?'':'opacity:.45'}" title="${i}:00 · ${fmtN(v)}"></i>`).join('');
+  $('lastSync').textContent=lastSyncText();
+
+  // last night
+  const s=keys.length?nightFor(m,today):null;
+  if(s){
+    const tot=s.c.deep+s.c.light;
+    $('nRange').textContent=`${hm(s.from)} ← ${hm(s.to)}`;
+    $('nightBody').innerHTML=`<div class="nighthead"><span class="big">${fmtH(tot)}</span>
+      <span class="mini">جودة ${s.quality} من 100 · عميق ${Math.round(s.c.deep/Math.max(1,tot)*100)}٪ · صحيت ${s.wakes} ${s.wakes===1?'مرة':'مرات'}</span></div>${hypno(s)}
+      <p class="hint">نفس طريقة حساب تطبيق Misfit الأصلي. تقدير من حركة اليد، مو قياس طبي.</p>`;
+  }else{
+    $('nRange').textContent='';
+    $('nightBody').innerHTML=`<p class="hint">${keys.length?'ما لقيت نوم. النوم ينحسب إذا كنت لابس الساعة ونمت ساعتين ونص أو أكثر بدون حركة كثير.':'ما فيه بيانات نوم لين الحين. البس الساعة وانت نايم، والصبح اضغط اتصال.'}</p>`;
+  }
+
+  // week
+  const wk=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);wk.push({k:dkey(d/1000),dow:d.getDay(),now:i===0})}
+  const vals=wk.map(w=>by[w.k]?by[w.k].steps:null), max=Math.max(goal*1.15,...vals.map(v=>v||0));
+  const short=v=>v>=1000?(v/1000).toFixed(v>=10000?0:1)+' ألف':String(v);
+  $('week').innerHTML=wk.map((w,i)=>{const v=vals[i];
+    return `<div class="col${v===null?' none':''}${v>=goal?' hit':''}${w.now?' now':''}"><div class="bar" style="height:${v===null?0:v/max*100}%"></div><span class="val">${v===null?'—':short(v)}</span><span class="lbl">${w.now?'اليوم':DAYS[w.dow]}</span></div>`}).join('')
+    +`<div class="goal" style="bottom:calc(${goal/max} * (100% - 40px) + 40px)"></div>`;
+  const withData=vals.filter(v=>v!==null);
+  const avg=withData.length?withData.reduce((a,b)=>a+b,0)/withData.length:0;
+  $('weekSum').innerHTML=`<span>المعدل <b class="num">${fmtN(avg)}</b></span><span>وصلت الهدف <b class="num">${withData.filter(v=>v>=goal).length}</b> من ${withData.length||7} ${withData.length&&withData.length<7?'أيام مسجّلة':''}</span>`;
+
+  // records
+  const dlist=Object.keys(by).sort();
+  let best=null;for(const k of dlist) if(!best||by[k].steps>by[best].steps) best=k;
+  let streak=0;{const d=new Date();d.setHours(12,0,0,0);
+    if(!(by[dkey(d/1000)]&&by[dkey(d/1000)].steps>=goal)) d.setDate(d.getDate()-1);
+    while(by[dkey(d/1000)]&&by[dkey(d/1000)].steps>=goal){streak++;d.setDate(d.getDate()-1)}}
+  const total=dlist.reduce((a,k)=>a+by[k].steps,0);
+  const bd=best?new Date(best+'T12:00'):null;
+  $('recs').innerHTML=!dlist.length?'<p class="hint" style="grid-column:1/-1">تطلع هنا أرقامك بعد أول سحب.</p>':
+    `<div class="rec"><span class="k">أفضل يوم</span><span class="v">${fmtN(by[best].steps)}</span><span class="n">${DAYS[bd.getDay()]} ${best.slice(5)}</span></div>
+     <div class="rec"><span class="k">أيام ورا بعض 🔥</span><span class="v">${streak}</span><span class="n">وصلت فيها الهدف</span></div>
+     <div class="rec"><span class="k">المجموع</span><span class="v">${dlist.reduce((a,k)=>a+by[k].km,0).toFixed(1)}</span><span class="n">كم من ${dlist.length} ${dlist.length===1?'يوم':'أيام'}</span></div>`;
+
+  // all days
+  const box=$('days'); box.textContent='';
+  const dks=Object.keys(by).sort().reverse();
+  $('actInfo').textContent=keys.length?`(${dks.length} يوم)`:'';
+  for(const k of dks){
+    const o=by[k], mx=Math.max(1,...o.hours);
+    const el=document.createElement('div');el.className='day';
+    const dd=new Date(k+'T12:00');
+    el.innerHTML=`<div class="dayh"><span>${DAYS[dd.getDay()]} ${k.slice(5)}</span><span class="n">${fmtN(o.steps)} خطوة</span></div>
+      <div class="bars">${o.hours.map(v=>`<i style="height:${Math.round(v/mx*100)}%"></i>`).join('')}</div>
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>`;
+    const sl=nightFor(m,k);
+    if(sl){const d2=document.createElement('div');d2.className='mini';d2.style.display='grid';d2.style.gap='6px';
+      d2.innerHTML=`<span>النوم ${fmtH(sl.c.deep+sl.c.light)}</span>${sleepBar(sl)}`;el.appendChild(d2)}
+    box.appendChild(el);
+  }
+}
+
+/* ---------- backup ---------- */
+function toast(s){$('toast').textContent=s}
+$('bExport').onclick=async()=>{
+  const data={app:'ray-lab',v:6,birth:S.birth,gender:S.gender,saved:new Date().toISOString(),tzOffset:-new Date().getTimezoneOffset(),points:$('vPts').textContent,raw:lsGet('rayRaw',''),rawAt:+lsGet('rayRawAt',0),mins:loadMins(),goal:S.goal,height:S.height,weight:S.weight};
+  const name=`ray-${dkey(Date.now()/1000)}.json`;
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  try{
+    const file=new File([blob],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});toast('تم');return}
+  }catch(e){if(e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  toast('نزل الملف '+name+'، احفظه في الملفات');
+};
+$('bCopyRaw').onclick=async()=>{
+  const raw=lsGet('rayRaw','');
+  
+  // also the last 48 hours of saved minutes, packed 4 bytes each (steps, points, variance), missing = FF FF FF FF
+  const m=loadMins(), t1=Math.floor(Date.now()/60000)*60, t0=t1-48*3600, buf=new Uint8Array((t1-t0)/60*4);
+  for(let t=t0,i=0;t<t1;t+=60,i+=4){const r=m[t];
+    if(r){buf[i]=Math.min(255,r[0]);buf[i+1]=Math.min(255,r[1]);const v=Math.min(65534,r[2]>>>0);buf[i+2]=v&255;buf[i+3]=v>>8}
+    else{buf[i]=buf[i+1]=buf[i+2]=buf[i+3]=255}}
+  let bin='';for(const x of buf)bin+=String.fromCharCode(x);
+  const txt='RAYRAW '+JSON.stringify({v:6,rawAt:+lsGet('rayRawAt',0),tz:-new Date().getTimezoneOffset(),points:$('vPts').textContent,raw,t0,mins:btoa(bin)});
+  const box=$('rawBox');box.value=txt;box.style.display='block';box.focus();box.select();box.setSelectionRange(0,txt.length);
+  let ok=false;try{await navigator.clipboard.writeText(txt);ok=true}catch(e){try{ok=document.execCommand('copy')}catch(_){}}
+  toast(ok?`انسخ ✅ (${fmtN(txt.length)} حرف). روح للمحادثة والصقه`:'حدّد النص اللي تحت كله وانسخه يدوي');
+};
+$('bImport').onclick=()=>$('fImport').click();
+$('fImport').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const d=JSON.parse(await f.text());if(!d.mins)throw new Error('مو ملف الراي');
+    const m=loadMins();let n=0;for(const k in d.mins){if(!m[k])n++;m[k]=d.mins[k]}saveMins(m);
+    if(d.goal)lsSet('rayGoal',d.goal);if(d.height)lsSet('rayHeight',d.height);if(d.weight)lsSet('rayWeight',d.weight);if(d.birth)lsSet('rayBirth',d.birth);if(d.gender!==undefined)lsSet('rayGender',d.gender);
+    $('goal').value=S.goal;render();toast(`رجعت ${fmtN(n)} دقيقة جديدة`)}
+  catch(err){toast('ما قدرت أقرأ الملف: '+err.message)}
+  e.target.value='';
+};
+
+/* ---------- buttons ---------- */
+$('bConnect').onclick=()=>{ if(dev&&dev.gatt.connected){dev.gatt.disconnect()} else connect() };
+$('bRead').onclick=readAll;
+$('bSync').onclick=syncTime;
+$('bBlink').onclick=blink;
+$('bSend').onclick=sendHex;
+$('hex').addEventListener('keydown',e=>{if(e.key==='Enter')sendHex()});
+$('bPull').onclick=pull;
+$('bRefresh').onclick=pull;
+setInterval(()=>{if(!xfer)render()},60000);
+$('bNext').onclick=()=>show($('nextConfirm'),'flex');
+$('bNextNo').onclick=()=>hide($('nextConfirm'));
+$('bNextYes').onclick=eraseAndNext;
+$('bForget').onclick=()=>{if(dev&&dev.gatt.connected)dev.gatt.disconnect();lsSet('rayId','');skipKnown=true;dev=null;log('نسيت الساعة المحفوظة');setConn('off','غير متصل')};
+(function cleanFake(){
+  if(lsGet('rayClean1','')) return;
+  const m=loadMins(); let n=0;
+  for(const k in m){ const r=m[k]; if(r[0]>220||r[1]>255){ delete m[k]; n++ } }
+  saveMins(m); lsSet('rayClean1','1'); if(n) log(`نظّفت ${n} دقيقة غلط من الحسبة القديمة`);
+})();
+render();
+/* after a refresh: connect to the remembered watch by itself (needs no tap) */
+(async()=>{
+  if(!navigator.bluetooth||!lsGet('rayId','')) return;
+  const k=await knownDevice(); if(!k) return;
+  log('فتحت الصفحة، أرجّع الاتصال بالساعة المحفوظة');
+  busy=true;setConn('busy','أرجّع الاتصال...');
+  try{await setup(k,12)}catch(e){skipKnown=true;setConn('off','اضغط اتصال واختر Ray')}finally{busy=false}
+})();
+</script>
+</body>
+</html>
